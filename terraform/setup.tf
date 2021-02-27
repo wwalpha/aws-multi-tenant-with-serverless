@@ -29,3 +29,17 @@ resource "null_resource" "backend_auth" {
     }
   }
 }
+
+resource "null_resource" "lambda_build" {
+  triggers = {
+    file_content_md5 = md5(file("../${path.module}/authorizer/index.ts"))
+  }
+
+  provisioner "local-exec" {
+    command = "sh ${path.module}/scripts/tscbuild.sh"
+
+    environment = {
+      FOLDER_PATH = "../authorizer"
+    }
+  }
+}
