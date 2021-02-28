@@ -15,6 +15,6 @@ resource "aws_lambda_function" "authorizer" {
 data "archive_file" "authorizer" {
   depends_on  = [null_resource.lambda_build]
   type        = "zip"
-  source_dir  = "../authorizer/build"
-  output_path = "../authorizer/build.zip"
+  source_dir  = "../functions/authorizer/build"
+  output_path = "../functions/authorizer/build.zip"
 }

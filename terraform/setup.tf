@@ -22,7 +22,7 @@ resource "null_resource" "backend_auth" {
     command = "sh ${path.module}/scripts/dockerbuild.sh"
 
     environment = {
-      FOLDER_PATH    = "../backend/auth"
+      FOLDER_PATH    = "../backend/auth-manager"
       AWS_REGION     = local.region
       AWS_ACCOUNT_ID = local.account_id
       REPO_URL       = aws_ecr_repository.saas_auth.repository_url
@@ -32,14 +32,14 @@ resource "null_resource" "backend_auth" {
 
 resource "null_resource" "lambda_build" {
   triggers = {
-    file_content_md5 = md5(file("../${path.module}/authorizer/index.ts"))
+    file_content_md5 = md5(file("../${path.module}/functions/authorizer/index.ts"))
   }
 
   provisioner "local-exec" {
     command = "sh ${path.module}/scripts/tscbuild.sh"
 
     environment = {
-      FOLDER_PATH = "../authorizer"
+      FOLDER_PATH = "../functions/authorizer"
     }
   }
 }
