@@ -1,0 +1,34 @@
+{
+  "name": "user-manager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "build": "tsc",
+    "test": "nodemon",
+    "typings": "cp ../typings . --recursive"
+  },
+  "dependencies": {
+    "amazon-cognito-identity-js": "^4.5.12",
+    "aws-sdk": "^2.853.0",
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "dynamodb-helper": "https://github.com/wwalpha/dynamodb-helper.git",
+    "express": "^4.17.1",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.11",
+    "@types/node": "^14.14.31",
+    "@types/uuid": "^8.3.0",
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.7",
+    "uuid": "^8.3.2"
+  },
+  "nodemonConfig":{
+    "watch": ["src"],
+    "ext": "ts",
+    "exec": "ts-node -r dotenv/config src/index.ts"
+  }
+}

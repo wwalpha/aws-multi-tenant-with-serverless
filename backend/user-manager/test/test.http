@@ -1,0 +1,15 @@
+# health check
+GET http://localhost:8080/user/health
+
+# regist tenant admin
+POST http://localhost:8080/user/reg
+Content-Type: application/json
+
+{
+  "tenantId": "TENANT1234567890",
+  "companyName": "com111",
+  "userName": "wwalpha@gmail.com",
+  "firstName": "first111",
+  "lastName": "last222",
+  "tier": "prod"
+}
