@@ -15,7 +15,6 @@ WORKDIR /usr/local/app
 COPY --from=build /usr/local/app/dist .
 COPY package.json .
 
-RUN apk update && apk add git
 RUN yarn install --production --no-lockfile
 
 EXPOSE 8080

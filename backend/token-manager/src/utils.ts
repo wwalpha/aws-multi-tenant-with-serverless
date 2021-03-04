@@ -139,6 +139,10 @@ export const getCredentials = () =>
         return;
       }
 
-      resolve(credentials);
+      resolve({
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken,
+      });
     });
   });
