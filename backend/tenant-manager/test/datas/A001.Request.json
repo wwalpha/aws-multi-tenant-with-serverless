@@ -1,0 +1,10 @@
+{
+  "accountName": "test@test.com",
+  "companyName": "test",
+  "userName": "test@test.com",
+  "email": "test@test.com",
+  "ownerName": "test@test.com",
+  "tier": "pro",
+  "identityPoolId": "identity_pool_id",
+  "userPoolId": "user_pool_id"
+}

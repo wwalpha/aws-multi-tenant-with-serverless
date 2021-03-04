@@ -1,0 +1,12 @@
+{
+  "ownerName": "test@test.com",
+  "tier": "pro",
+  "accountName": "test@test.com",
+  "companyName": "test",
+  "id": "TENANT1234567890",
+  "userName": "test@test.com",
+  "identityPoolId": "identity_pool_id",
+  "userPoolId": "user_pool_id",
+  "email": "test@test.com",
+  "status": "Active"
+}
