@@ -1,10 +1,20 @@
+export const Environments = {
+  TABLE_NAME_TENANT: process.env.TABLE_NAME_TENANT as string,
+  TABLE_NAME_USER: process.env.TABLE_NAME_USER as string,
+  TABLE_NAME_PRODUCT: process.env.TABLE_NAME_PRODUCT as string,
+  TABLE_NAME_ORDER: process.env.TABLE_NAME_ORDER as string,
+  SERVICE_ENDPOINT_TENANT: `http://${process.env.SERVICE_ENDPOINT_TENANT}`,
+  SERVICE_ENDPOINT_USER: `http://${process.env.SERVICE_ENDPOINT_USER}`,
+  SERVICE_ENDPOINT_AUTH: `http://${process.env.SERVICE_ENDPOINT_AUTH}`,
+  SERVICE_ENDPOINT_TOKEN: `http://${process.env.SERVICE_ENDPOINT_TOKEN}`,
+};
+
 /**
  * principals for cognito
  *
  * @param identityPoolId identity pool id
  */
-export const COGNITO_PRINCIPALS = (identityPoolId: string) => `
-{
+export const COGNITO_PRINCIPALS = (identityPoolId: string) => `{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -30,19 +40,18 @@ export const COGNITO_PRINCIPALS = (identityPoolId: string) => `
  * admin user policy
  *
  * @param tenantId tenant id
+ * @param userpoolArn user pool arn
  * @param userArn user table arn
  * @param orderArn order table arn
  * @param productArn product table arn
- * @param userpoolArn user pool arn
  */
 export const ADMIN_POLICY = (
   tenantId: string,
-  userArn: string,
-  orderArn: string,
-  productArn: string,
-  userpoolArn: string
-) => `
-{
+  userpoolArn: string,
+  userArn?: string,
+  orderArn?: string,
+  productArn?: string
+) => `{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -91,19 +100,18 @@ export const ADMIN_POLICY = (
  * normal user policy
  *
  * @param tenantId tenant id
+ * @param userpoolArn user pool arn
  * @param userArn user table arn
  * @param orderArn order table arn
  * @param productArn product table arn
- * @param userpoolArn user pool arn
  */
 export const USER_POLICY = (
   tenantId: string,
-  userArn: string,
-  orderArn: string,
-  productArn: string,
-  userpoolArn: string
-) => `
-{
+  userpoolArn: string,
+  userArn?: string,
+  orderArn?: string,
+  productArn?: string
+) => `{
   "Version": "2012-10-17",
   "Statement": [
     {

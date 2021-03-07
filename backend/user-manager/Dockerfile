@@ -6,8 +6,7 @@ WORKDIR /usr/local/app
 COPY . .
 
 RUN apk update && apk add git
-RUN yarn add typescript ts-node && \
-  yarn install && \
+RUN yarn install && \
   yarn build
 
 # Release Stage
@@ -15,7 +14,6 @@ FROM node:14-alpine
 WORKDIR /usr/local/app
 
 COPY --from=build /usr/local/app/dist .
-COPY --from=build /usr/local/app/datas ./datas
 COPY package.json .
 
 RUN apk update && apk add git

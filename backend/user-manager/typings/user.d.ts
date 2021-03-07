@@ -1,7 +1,6 @@
-import { CredentialsOptions } from 'aws-sdk/lib/credentials';
-
-export interface Credentials {
-  claim: CredentialsOptions;
+export interface HealthCheck {
+  service: string;
+  isAlive: boolean;
 }
 
 export interface TenantAdminRegistRequest {
@@ -25,4 +24,10 @@ export interface CognitoInfos {
 
 export interface LookupUserRequest {}
 
-export interface LookupUserResponse {}
+export interface LookupUserResponse {
+  isExist: boolean;
+}
+
+export interface GetUserRequest {}
+
+export interface GetUserResponse {}

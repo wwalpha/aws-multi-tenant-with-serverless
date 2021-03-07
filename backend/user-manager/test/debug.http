@@ -6,7 +6,7 @@ POST http://localhost:8080/user/reg
 Content-Type: application/json
 
 {
-  "tenantId": "TENANT1234567890",
+  "tenantId": "TENANT0000000002",
   "companyName": "com111",
   "userName": "wwalpha@gmail.com",
   "firstName": "first111",
