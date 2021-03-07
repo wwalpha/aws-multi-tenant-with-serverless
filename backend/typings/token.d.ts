@@ -26,4 +26,17 @@ export interface UserTokenRequest {
 }
 
 /** get credentials from user token response */
-export interface UserTokenResponse {}
+export interface UserTokenResponse {
+  /**
+   * AWS access key ID.
+   */
+  accessKeyId: string;
+  /**
+   * AWS secret access key.
+   */
+  secretAccessKey: string;
+  /**
+   * AWS session token.
+   */
+  sessionToken?: string;
+}

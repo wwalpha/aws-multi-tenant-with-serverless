@@ -1,5 +1,3 @@
-import { CredentialsOptions } from 'aws-sdk/lib/credentials';
-
 export type CognitoToken = {
   sub: string;
   aud: string;
@@ -28,4 +26,17 @@ export interface UserTokenRequest {
 }
 
 /** get credentials from user token response */
-export interface UserTokenResponse extends CredentialsOptions {}
+export interface UserTokenResponse {
+  /**
+   * AWS access key ID.
+   */
+  accessKeyId: string;
+  /**
+   * AWS secret access key.
+   */
+  secretAccessKey: string;
+  /**
+   * AWS session token.
+   */
+  sessionToken?: string;
+}
