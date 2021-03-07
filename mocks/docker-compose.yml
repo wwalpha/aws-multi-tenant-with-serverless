@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - 4566:4566
+    environment:
+      - SERVICES=dynamodb
+      - DEFAULT_REGION=ap-northeast-2
+      - DATA_DIR=/tmp/dynamodb
+      - USE_SSL=true
+    volumes:
+      - "${PWD}/mocks/datas:/tmp/localstack"
+      - "${PWD}/mocks/datas:/tmp/dynamodb"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+  token:
+    image: saas/token
+    container_name: token-manager
+    ports:
+      - 8081:8080
+  tenant:
+    image: saas/tenant
+    container_name: tenant-manager
+    ports:
+      - 8082:8080
