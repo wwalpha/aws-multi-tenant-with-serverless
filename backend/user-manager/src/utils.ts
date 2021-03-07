@@ -495,7 +495,7 @@ export const lookupUserPoolData = async (
   isSystemContext: boolean,
   tenantId?: string,
   credentials?: CredentialsOptions
-) => {
+): Promise<User.CognitoInfos | undefined> => {
   const helper = new DynamodbHelper({
     credentials: credentials,
   });
@@ -514,12 +514,18 @@ export const lookupUserPoolData = async (
     });
 
     // not found
-    if (results.Count === 0) {
+    if (results.Count === 0 || !results.Items) {
       return undefined;
     }
 
+    const item = results.Items[0] as Tables.UserItem;
+
     // user founded
-    return results.Items?.[0];
+    return {
+      ClientId: item.clientId,
+      UserPoolId: item.userPoolId,
+      IdentityPoolId: item.identityPoolId,
+    };
   }
 
   const searchParams = {
@@ -533,7 +539,19 @@ export const lookupUserPoolData = async (
     Key: searchParams,
   });
 
-  return results?.Item;
+  // not found
+  if (!results || !results.Item) {
+    return undefined;
+  }
+
+  const item = results.Item as Tables.UserItem;
+
+  // user founded
+  return {
+    ClientId: item.clientId,
+    UserPoolId: item.userPoolId,
+    IdentityPoolId: item.identityPoolId,
+  };
 };
 
 /**

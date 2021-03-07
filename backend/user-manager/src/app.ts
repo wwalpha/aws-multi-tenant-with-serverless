@@ -48,8 +48,15 @@ export const lookupUser = async (req: express.Request): Promise<User.LookupUserR
   // find user in user pool
   const user = await lookupUserPoolData(req.params.id, true);
 
+  if (!user) {
+    return { isExist: false };
+  }
+
   return {
-    isExist: user !== undefined,
+    isExist: true,
+    identityPoolId: user.IdentityPoolId,
+    userPoolId: user.UserPoolId,
+    userPoolClientId: user.ClientId,
   };
 };
 

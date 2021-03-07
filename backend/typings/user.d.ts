@@ -48,7 +48,14 @@ export interface CognitoInfos {
 export interface LookupUserRequest {}
 
 export interface LookupUserResponse {
+  /** is user exist */
   isExist: boolean;
+  /** user pool id */
+  userPoolId?: string;
+  /** user pool client id */
+  userPoolClientId?: string;
+  /** identity pool id */
+  identityPoolId?: string;
 }
 
 export interface GetUserRequest {}
