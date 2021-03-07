@@ -1,6 +1,6 @@
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
-import { common, getCredentialsFromToken } from './app';
+import { common, getCredentialsFromToken, healthCheck } from './app';
 
 // instantiate application
 const app = express();
@@ -9,7 +9,10 @@ const app = express();
 app.use(json());
 app.use(urlencoded({ extended: false }));
 
+// health check
+app.get('/token/health', async (req, res) => await common(req, res, healthCheck));
+
 /** get credentials from token */
-app.get('/token/user', async (req, res) => await common(req, res, getCredentialsFromToken));
+app.post('/token/user', async (req, res) => await common(req, res, getCredentialsFromToken));
 
 export default app;

@@ -20,6 +20,9 @@ export const common = async (req: express.Request, res: express.Response, app: a
   }
 };
 
+// health check
+export const healthCheck = async (): Promise<Token.HealthCheck> => ({ service: 'Token Manager', isAlive: true });
+
 /**
  * Get access credential from the passed in request
  *
@@ -41,13 +44,16 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Tok
 
   // decode token
   const token = decodeToken(request.token);
+  console.log(token);
   // get username
   const username = token['cognito:username'];
   // get userpool infos
   const userInfo = await getUserPoolWithParams(username);
+  console.log(userInfo);
   // get
   const credetials = await authenticateUserInPool(userInfo, request.token, token.iss);
 
+  console.log(credetials);
   if (!credetials) throw new Error('Credentials create failure.');
 
   return {

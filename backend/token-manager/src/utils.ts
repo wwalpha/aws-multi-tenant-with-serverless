@@ -22,7 +22,7 @@ export const getUserPoolWithParams = async (userName: string): Promise<Token.Use
 
     // http error
     if (response.status !== 200) {
-      throw new Error();
+      throw new Error('Lookup user failed.');
     }
 
     const { userPoolId, userPoolClientId, identityPoolId } = response.data;

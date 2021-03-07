@@ -1,3 +1,8 @@
+export interface HealthCheck {
+  service: string;
+  isAlive: boolean;
+}
+
 export type CognitoToken = {
   sub: string;
   aud: string;
