@@ -1,0 +1,19 @@
+{
+  "name": "aws-multi-tenant-with-serverless",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/wwalpha/aws-multi-tenant-with-serverless.git",
+  "author": "wwalpha <wwalpha@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn build:all && yarn compose:restart && yarn clean",
+    "build:token": "cd backend/token-manager && yarn build:docker",
+    "build:tenant": "cd backend/tenant-manager && yarn build:docker",
+    "build:user": "cd backend/user-manager && yarn build:docker",
+    "build:all" :"yarn build:token && yarn build:tenant && yarn build:user",
+    "compose:down": "docker-compose -f 'mocks/docker-compose.yml' down",
+    "compose:up": "docker-compose -f 'mocks/docker-compose.yml' up -d --build",
+    "compose:restart": "yarn compose:down && yarn compose:up",
+    "clean": "docker image prune --force"
+  }
+}
