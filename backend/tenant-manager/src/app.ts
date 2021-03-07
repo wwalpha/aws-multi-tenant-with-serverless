@@ -1,8 +1,9 @@
 import express from 'express';
 import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
-import { Environments, getCredentialsFromToken } from './utils';
+import { getCredentialsFromToken } from './utils';
 import { Tenant, Tables } from 'typings';
+import { Environments } from './consts';
 
 winston.add(new winston.transports.Console({ level: 'debug' }));
 
@@ -25,9 +26,11 @@ export const common = async (req: express.Request, res: express.Response, app: a
 export const healthCheck = async () => ({ service: 'Tenant Manager', isAlive: true });
 
 /** create a tenant */
-export const registTenant = async (req: express.Request): Promise<Tenant.RegistTenantResponse> => {
+export const registTenant = async (
+  req: express.Request<any, any, Tenant.RegistTenantRequest>
+): Promise<Tenant.RegistTenantResponse> => {
   const tenantId = req.params.id;
-  const tenant = req.body as Tenant.RegistTenantRequest;
+  const request = req.body;
 
   winston.debug('Creating Tenant: ' + tenantId);
 
@@ -37,7 +40,7 @@ export const registTenant = async (req: express.Request): Promise<Tenant.RegistT
     // @ts-ignore
     id: tenantId,
     status: 'Active',
-    ...tenant,
+    ...request,
   };
 
   // add tenant info

@@ -1,7 +1,7 @@
 import { DynamodbHelper } from 'dynamodb-helper';
 import request from 'supertest';
 import server from '../src/server';
-import { Environments } from '../src/utils';
+import { Environments } from '../src/consts';
 import { Tables } from 'typings';
 
 describe('tenant', () => {

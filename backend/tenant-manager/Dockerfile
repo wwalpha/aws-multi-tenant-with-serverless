@@ -5,6 +5,7 @@ WORKDIR /usr/local/app
 
 COPY . .
 
+RUN apk update && apk add git
 RUN yarn install
 RUN yarn build
 

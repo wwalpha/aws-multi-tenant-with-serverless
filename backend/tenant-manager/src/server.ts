@@ -1,20 +1,17 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+import { json, urlencoded } from 'body-parser';
 import winston from 'winston';
-import AWS, { DynamoDB } from 'aws-sdk';
 import { common, deleteTenant, getTenant, healthCheck, registTenant, updateTanant } from './app';
 
 // Configure Logging
 winston.add(new winston.transports.Console({ level: 'debug' }));
-// Configure AWS Region
-AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
 
 // Instantiate application
 const app = express();
 
 // Configure middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(json());
+app.use(urlencoded({ extended: false }));
 
 // health check
 app.get('/tenant/health', async (req, res) => await common(req, res, healthCheck));
