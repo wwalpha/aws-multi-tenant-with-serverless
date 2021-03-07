@@ -1,28 +1,95 @@
-import { Config } from 'aws-sdk';
-import { CredentialsOptions } from 'aws-sdk/lib/credentials';
+import { CognitoIdentity } from 'aws-sdk';
 import express from 'express';
 import jwtDecode from 'jwt-decode';
+import axios from 'axios';
 import winston from 'winston';
-import { Token } from 'typings/token';
+import { Environments } from './const';
+import { Token, User } from 'typings';
 
 winston.add(new winston.transports.Console({ level: 'debug' }));
+
+/**
+ * Lookup the user pool from a user name
+ *
+ * @param username The username to lookup
+ * @return params object with user pool and idToken
+ */
+export const getUserPoolWithParams = async (userName: string): Promise<Token.UserPoolDetails> => {
+  const userURL = `${Environments.SERVICE_ENDPOINT_USER}/pool/${userName}`;
+
+  try {
+    const response = await axios.get<User.LookupUserResponse>(userURL);
+
+    // http error
+    if (response.status !== 200) {
+      throw new Error();
+    }
+
+    const { userPoolId, userPoolClientId, identityPoolId } = response.data;
+
+    // return result
+    return { userPoolId, userPoolClientId, identityPoolId };
+  } catch (err) {
+    throw new Error('Error loading user: ' + err);
+  }
+};
+
+/**
+ * Authenticate the user in the user pool
+ *
+ * @param userPool The pool to use for authentication
+ * @param idToken The id token for this session
+ */
+export const authenticateUserInPool = async (
+  userPool: Token.UserPoolDetails,
+  token: string,
+  iss: string
+): Promise<CognitoIdentity.Credentials | undefined> => {
+  const provider = iss.replace('https://', '');
+  const client = new CognitoIdentity({ region: Environments.AWS_DEFAULT_REGION });
+
+  // get identity id
+  const idResult = await client
+    .getId({
+      IdentityPoolId: userPool.identityPoolId,
+      Logins: {
+        [provider]: token,
+      },
+    })
+    .promise();
+
+  // identity id not exist
+  if (!idResult.IdentityId) return undefined;
+
+  // get credentials
+  const result = await client
+    .getCredentialsForIdentity({
+      IdentityId: idResult.IdentityId,
+      Logins: {
+        [provider]: token,
+      },
+    })
+    .promise();
+
+  return result.Credentials;
+};
 
 /**
  * decode bearer token
  *
  * @param bearerToken bearer token
  */
-export const decodeToken = (bearerToken?: string): Token => {
+export const decodeToken = (bearerToken?: string): Token.CognitoToken => {
   // not found
-  if (!bearerToken) return {};
+  if (!bearerToken) throw new Error(`BearerToken token not exist.`);
 
   // convert
   const token = bearerToken.substring(bearerToken.indexOf(' ') + 1);
   // decode jwt token
-  const decodedToken = jwtDecode<Token | undefined>(token);
+  const decodedToken = jwtDecode<Token.CognitoToken | undefined>(token);
 
   // decode failed
-  if (!decodedToken) return {};
+  if (!decodedToken) throw new Error(`Decode token failed. ${bearerToken}`);
 
   return decodedToken;
 };
@@ -50,99 +117,73 @@ export const getTenantId = (req: express.Request) => {
  * @param req A request
  * @returns A role
  */
-export const getUserRole = (req: express.Request) => {
-  // get token
-  const bearerToken = req.get('Authorization');
+// export const getUserRole = (req: express.Request) => {
+//   // get token
+//   const bearerToken = req.get('Authorization');
 
-  // decode token
-  const token = decodeToken(bearerToken);
+//   // decode token
+//   const token = decodeToken(bearerToken);
 
-  // get value
-  const role = token['custom:role'];
+//   // get value
+//   const role = token['custom:role'];
 
-  return role !== undefined ? role : 'unknown';
-};
+//   return role !== undefined ? role : 'unknown';
+// };
 
 /**
  * Decode and token and extract the user's full name from the token.
  * @param idToken A bearer token
  * @returns The user's full name
  */
-export const getUserFullName = (bearerToken?: string) => {
-  const token = decodeToken(bearerToken);
+// export const getUserFullName = (bearerToken?: string) => {
+//   const token = decodeToken(bearerToken);
 
-  // no keys
-  if (Object.keys(token).length === 0) return '';
+//   // no keys
+//   if (Object.keys(token).length === 0) return '';
 
-  return { firstName: token.given_name, lastName: token.family_name };
-};
+//   return { firstName: token.given_name, lastName: token.family_name };
+// };
 
 /**
  * Get the authorization token from a request
  * @param req The request with the authorization header
  * @returns The user's email address
  */
-export const getRequestAuthToken = (req: express.Request) => {
-  const authHeader = req.get('Authorization');
+// export const getRequestAuthToken = (req: express.Request) => {
+//   const authHeader = req.get('Authorization');
 
-  // required check
-  if (!authHeader) return '';
+//   // required check
+//   if (!authHeader) return '';
 
-  return authHeader.substring(authHeader.indexOf(' ') + 1);
-};
+//   return authHeader.substring(authHeader.indexOf(' ') + 1);
+// };
 
 /**
  * Decode token and validate access
  * @param bearerToken A bearer token
  * @returns The users access is provided
  */
-export const checkRole = (bearerToken?: string) => {
-  // check parameter
-  if (!bearerToken) return {};
-  // decode jwt token
-  const token = decodeToken(bearerToken);
-  // check result
-  if (!token['custom:role']) return {};
+// export const checkRole = (bearerToken?: string) => {
+//   // check parameter
+//   if (!bearerToken) return {};
+//   // decode jwt token
+//   const token = decodeToken(bearerToken);
+//   // check result
+//   if (!token['custom:role']) return {};
 
-  return token['custom:role'];
-};
+//   return token['custom:role'];
+// };
 
-/**
- * Decode and token and extract the token
- * @param bearerToken A bearer token
- * @returns The user's full name
- */
-export const decodeOpenID = (bearerToken?: string) => {
-  // check parameter
-  if (!bearerToken) return {};
-  // decode jwt token
-  const token = decodeToken(bearerToken);
+// /**
+//  * Decode and token and extract the token
+//  * @param bearerToken A bearer token
+//  * @returns The user's full name
+//  */
+// export const decodeOpenID = (bearerToken?: string) => {
+//   // check parameter
+//   if (!bearerToken) return {};
+//   // decode jwt token
+//   const token = decodeToken(bearerToken);
 
-  return token;
-};
-
-export const getCredentials = () =>
-  new Promise<CredentialsOptions>((resolve, reject) => {
-    const config = new Config();
-
-    config.getCredentials((err, credentials) => {
-      if (err) {
-        winston.debug('Unable to Obtain Credentials');
-
-        reject(err);
-        return;
-      }
-
-      // error check
-      if (!credentials) {
-        reject(new Error('Unable to Obtain Credentials'));
-        return;
-      }
-
-      resolve({
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-        sessionToken: credentials.sessionToken,
-      });
-    });
-  });
+//   return token;
+// };

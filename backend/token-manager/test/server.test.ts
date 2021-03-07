@@ -2,9 +2,13 @@ import request from 'supertest';
 import server from '../src/server';
 
 describe('token manager', () => {
-  it('get system credentials', (done) => {
+  beforeAll(() => {});
+
+  afterAll(() => {});
+
+  it('get credentials from user', (done) => {
     request(server)
-      .get('/token/system')
+      .get('/token/user')
       .expect(200)
       .end((err, res) => {
         expect(err).toBeUndefined;

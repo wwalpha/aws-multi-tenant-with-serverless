@@ -1,22 +1,15 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import { common, getSystemCredentials } from './app';
+import { json, urlencoded } from 'body-parser';
+import { common, getCredentialsFromToken } from './app';
 
 // instantiate application
 const app = express();
 
 // configure middleware
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
+app.use(json());
+app.use(urlencoded({ extended: false }));
 
 /** get credentials from token */
-// app.get('/token/user', async (req, res) => await common(req, res, getCredentialsFromToken));
-
-/** get system credentials */
-app.get('/token/system', async (req, res) => await common(req, res, getSystemCredentials));
+app.get('/token/user', async (req, res) => await common(req, res, getCredentialsFromToken));
 
 export default app;
