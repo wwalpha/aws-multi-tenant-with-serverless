@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "terraform apply -auto-approve"
+    "start": "terraform apply -auto-approve",
+    "output": "terraform output > ../.env"
   }
 }
