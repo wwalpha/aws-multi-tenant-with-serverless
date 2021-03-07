@@ -4,10 +4,11 @@ services:
   localstack:
     image: localstack/localstack
     container_name: localstack
+    hostname: localstack
     ports:
       - 4566:4566
     environment:
-      - SERVICES=dynamodb
+      - SERVICES=serverless
       - DEFAULT_REGION=ap-northeast-2
       - DATA_DIR=/tmp/dynamodb
       - USE_SSL=true
@@ -15,13 +16,37 @@ services:
       - "${PWD}/mocks/datas:/tmp/localstack"
       - "${PWD}/mocks/datas:/tmp/dynamodb"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - internal
   token:
     image: saas/token
     container_name: token-manager
+    hostname: token-service
     ports:
       - 8081:8080
+    networks:
+      - internal
+    env_file: ${PWD}/.env
   tenant:
     image: saas/tenant
     container_name: tenant-manager
+    hostname: tenant-service
     ports:
       - 8082:8080
+    networks:
+      - internal
+    env_file: ${PWD}/.env
+  user:
+    image: saas/user
+    container_name: user-manager
+    hostname: user-service
+    ports:
+      - 8083:8080
+    networks:
+      - internal
+    env_file: ${PWD}/.env
+
+networks:
+  internal:
+    driver: bridge
+
