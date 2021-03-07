@@ -64,8 +64,6 @@ export interface DeleteTenantRequest {
   identityPoolId: string;
 }
 
-export interface DeleteTenantResponse {}
-
 /**
  * Cognito User Details
  */
