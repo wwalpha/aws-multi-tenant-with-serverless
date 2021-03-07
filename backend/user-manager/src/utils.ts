@@ -1,13 +1,18 @@
-import { CognitoIdentityServiceProvider, CognitoIdentity, IAM } from 'aws-sdk';
-import { DynamodbHelper } from 'dynamodb-helper';
-import winston from 'winston';
-import { ADMIN_POLICY, COGNITO_PRINCIPALS, Environments, USER_POLICY } from './consts';
-import { Tables, Token, User } from 'typings';
+import AWS, { CognitoIdentityServiceProvider, CognitoIdentity, IAM } from 'aws-sdk';
 import { CredentialsOptions } from 'aws-sdk/lib/credentials';
 import express from 'express';
 import axios from 'axios';
+import jwtDecode from 'jwt-decode';
+import { DynamodbHelper } from 'dynamodb-helper';
+import { ADMIN_POLICY, COGNITO_PRINCIPALS, Environments, USER_POLICY } from './consts';
+import { Tables, Token, User } from 'typings';
+import { v4 } from 'uuid';
 
-const AWS_REGION = process.env.AWS_DEFAULT_REGION;
+// update aws config
+AWS.config.update({
+  region: Environments.AWS_DEFAULT_REGION,
+  dynamodb: { endpoint: Environments.AWS_ENDPOINT_URL },
+});
 
 /**
  * provision cognito and admin user by system credentials
@@ -233,7 +238,7 @@ const createUserPoolClient = async (
 const createIdentiyPool = async (userPoolId: string, userPoolClientId: string, userPoolClientName: string) => {
   const identity = new CognitoIdentity();
 
-  const providerName = `cognito-idp.${AWS_REGION}.amazonaws.com/${userPoolId}`;
+  const providerName = `cognito-idp.${Environments.AWS_DEFAULT_REGION}.amazonaws.com/${userPoolId}`;
   // create identity pool
   const identityPool = await identity
     .createIdentityPool({
@@ -272,7 +277,7 @@ const setIdentityPoolRoles = async (
 ) => {
   const identity = new CognitoIdentity();
 
-  const providerName = `cognito-idp.${AWS_REGION}.amazonaws.com/${userPoolId}:${userPoolClientId}`;
+  const providerName = `cognito-idp.${Environments.AWS_DEFAULT_REGION}.amazonaws.com/${userPoolId}:${userPoolClientId}`;
   // set identity roles
   await identity
     .setIdentityPoolRoles({
@@ -337,7 +342,7 @@ const createAuthRole = async (tenantId: string, identityPoolId: string) => {
 const createAdminRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
   const principals = COGNITO_PRINCIPALS(identityPoolId);
 
-  const helper = new DynamodbHelper();
+  const helper = new DynamodbHelper({ options: { endpoint: Environments.AWS_ENDPOINT_URL } });
   const client = helper.getClient();
 
   const user = await client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise();
@@ -364,7 +369,7 @@ const createAdminRole = async (tenantId: string, identityPoolId: string, userpoo
   await iam
     .putRolePolicy({
       RoleName: adminRole.Role.RoleName,
-      PolicyName: 'inline',
+      PolicyName: 'AdminPolicy',
       PolicyDocument: adminPolicy,
     })
     .promise();
@@ -409,7 +414,7 @@ const createUserRole = async (tenantId: string, identityPoolId: string, userpool
   await iam
     .putRolePolicy({
       RoleName: userRole.Role.RoleName,
-      PolicyName: 'userPolicy',
+      PolicyName: 'UserPolicy',
       PolicyDocument: userPolicy,
     })
     .promise();
@@ -426,7 +431,7 @@ const createUserRole = async (tenantId: string, identityPoolId: string, userpool
  */
 export const createCognitoUser = async (
   userPoolId: string,
-  user: Tables.UserTableItem,
+  user: Tables.UserItem,
   credentials?: CredentialsOptions
 ) => {
   // init service provider
@@ -496,26 +501,25 @@ export const lookupUserPoolData = async (
   });
 
   if (isSystemContext) {
-    const searchParams = {
+    const results = await helper.query({
       TableName: Environments.TABLE_NAME_USER,
       IndexName: 'gsiIdx',
-      KeyConditionExpression: 'id = :id',
+      KeyConditionExpression: '#id = :id',
+      ExpressionAttributeNames: {
+        '#id': 'id',
+      },
       ExpressionAttributeValues: {
         ':id': userId,
       },
-    };
-
-    const results = await helper.query(searchParams);
+    });
 
     // not found
     if (results.Count === 0) {
-      throw undefined;
+      return undefined;
     }
 
     // user founded
-    if (results.Items) {
-      return results.Items[0];
-    }
+    return results.Items?.[0];
   }
 
   const searchParams = {
@@ -545,7 +549,7 @@ export const createNewUser = async (
   role: 'TENANT_ADMIN' | 'TENANT_USER',
   credentials?: CredentialsOptions
 ) => {
-  const userItem: Tables.UserTableItem = {
+  const userItem: Tables.UserItem = {
     ...request,
     accountName: request.companyName,
     userPoolId: cognito.UserPoolId,
@@ -553,7 +557,7 @@ export const createNewUser = async (
     identityPoolId: cognito.IdentityPoolId,
     ownerName: request.companyName,
     email: request.userName,
-    id: request.userName,
+    id: v4(),
     role: role,
   };
 
@@ -567,6 +571,7 @@ export const createNewUser = async (
 
   const helper = new DynamodbHelper({
     credentials: credentials,
+    options: { endpoint: Environments.AWS_ENDPOINT_URL },
   });
 
   // add user
@@ -603,4 +608,58 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Cre
     secretAccessKey: res.data.secretAccessKey,
     sessionToken: res.data.sessionToken,
   };
+};
+
+/**
+ * Delete IAM Role
+ *
+ * @param roleName role name
+ * @param policyName policy name
+ */
+export const deleteRole = async (roleName: string, policyName?: string) => {
+  const iam = new IAM();
+
+  if (policyName) {
+    await iam.deleteRolePolicy({ RoleName: roleName, PolicyName: policyName }).promise();
+  }
+
+  await iam.deleteRole({ RoleName: roleName }).promise();
+};
+
+/**
+ * Extract a token from the header and return its embedded user pool id
+ *
+ * @param req The request with the token
+ * @returns The user pool id from the token
+ */
+export const getUserPoolIdFromRequest = (req: express.Request) => {
+  // get token from request
+  const bearerToken = req.get('Authorization');
+  // decode token
+  const decodedToken = decodeToken(bearerToken);
+  // get iss
+  const iss = decodedToken.iss;
+
+  // get user pool id
+  return iss.substring(iss.lastIndexOf('/') + 1);
+};
+
+/**
+ * decode bearer token
+ *
+ * @param bearerToken bearer token
+ */
+export const decodeToken = (bearerToken?: string): Token.CognitoToken => {
+  // not found
+  if (!bearerToken) throw new Error(`BearerToken token not exist.`);
+
+  // convert
+  const token = bearerToken.substring(bearerToken.indexOf(' ') + 1);
+  // decode jwt token
+  const decodedToken = jwtDecode<Token.CognitoToken | undefined>(token);
+
+  // decode failed
+  if (!decodedToken) throw new Error(`Decode token failed. ${bearerToken}`);
+
+  return decodedToken;
 };

@@ -1,16 +1,24 @@
-import AWS from 'aws-sdk';
+import AWS, { CognitoIdentity, CognitoIdentityServiceProvider } from 'aws-sdk';
 import express from 'express';
 import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
 import { Environments } from './consts';
-import { createNewUser, lookupUserPoolData, provisionAdminUserWithRoles } from './utils';
+import {
+  createNewUser,
+  deleteRole,
+  getCredentialsFromToken,
+  lookupUserPoolData,
+  provisionAdminUserWithRoles,
+} from './utils';
 import { User } from 'typings';
 
 // Init the winston log level
 winston.add(new winston.transports.Console({ level: 'debug' }));
-// Init region
+
+// update aws config
 AWS.config.update({
-  region: process.env.AWS_DEFAULT_REGION,
+  region: Environments.AWS_DEFAULT_REGION,
+  dynamodb: { endpoint: Environments.AWS_ENDPOINT_URL },
 });
 
 /** catch undefined errors */
@@ -89,7 +97,9 @@ export const registTenantAdmin = async (
   const cognito = await provisionAdminUserWithRoles(request);
 
   // create admin user
-  return await createNewUser(request, cognito, 'TENANT_ADMIN');
+  const userItem = await createNewUser(request, cognito, 'TENANT_ADMIN');
+
+  return userItem as User.TenantAdminRegistResponse;
 };
 
 /**
@@ -121,8 +131,67 @@ export const deleteTables = async (req: express.Request, res: express.Response) 
   }
 };
 
-export const deleteTenant = async (req: express.Request, res: express.Response) => {
+/**
+ * Delete cognito user pool, identity pool and IAM roles
+ *
+ * @param req request
+ */
+export const deleteTenant = async (req: express.Request<any, any, User.DeleteTenantRequest>) => {
   winston.debug('Cleaning up Identity Reference Architecture');
+
+  const { tenantId, userPoolId, identityPoolId } = req.body;
+
+  // delete user pool
+  const provider = new CognitoIdentityServiceProvider();
+  await provider.deleteUserPool({ UserPoolId: userPoolId }).promise();
+
+  // delete identity pool
+  const identity = new CognitoIdentity();
+  await identity.deleteIdentityPool({ IdentityPoolId: identityPoolId }).promise();
+
+  // delete iam roles
+  await deleteRole(`SaaS_${tenantId}_AdminRole`, 'AdminPolicy');
+  await deleteRole(`SaaS_${tenantId}_UserRole`, 'UserPolicy');
+  await deleteRole(`SaaS_${tenantId}_AuthRole`);
+
+  const helper = new DynamodbHelper();
+
+  // get all users
+  const results = await helper.query({
+    TableName: Environments.TABLE_NAME_USER,
+    ProjectionExpression: 'tenantId, id',
+    KeyConditionExpression: '#tenantId = :tenantId',
+    ExpressionAttributeNames: {
+      '#tenantId': 'tenantId',
+    },
+    ExpressionAttributeValues: {
+      ':tenantId': tenantId,
+    },
+  });
+
+  if (results.Items) {
+    // remove user rows
+    await helper.truncate(Environments.TABLE_NAME_USER, results.Items);
+  }
+};
+
+export const getUsers = async (req: express.Request) => {
+  // get credentials
+  const credentials = await getCredentialsFromToken(req);
+
+  // function (req, res) {
+  //   tokenManager.getCredentialsFromToken(req, function (credentials) {
+  //     var userPoolId = getUserPoolIdFromRequest(req);
+  //     cognitoUsers
+  //       .getUsersFromPool(credentials, userPoolId, configuration.aws_region)
+  //       .then(function (userList) {
+  //         res.status(200).send(userList);
+  //       })
+  //       .catch(function (error) {
+  //         res.status(400).send('Error retrieving user list: ' + error.message);
+  //       });
+  //   });
+  // }
 };
 
 // health check

@@ -1,6 +1,6 @@
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
-import { getUser, healthCheck, lookupUser, registTenantAdmin, deleteTables, common } from './app';
+import { getUser, healthCheck, lookupUser, registTenantAdmin, deleteTables, common, deleteTenant } from './app';
 
 // instantiate application
 var app = express();
@@ -12,121 +12,30 @@ app.use(urlencoded({ extended: false }));
 // health check
 app.get('/user/health', async (req, res) => await common(req, res, healthCheck));
 
-/** Lookup user pool for any user - no user data returned */
-app.get('/user/pool/:id', async (req, res) => await common(req, res, lookupUser));
-
-/** Get user attributes */
-app.get('/user/:id', async (req, res) => await common(req, res, getUser));
-
-/** Provision a new tenant admin user */
+// Provision a new tenant admin user
 app.post('/user/reg', async (req, res) => await common(req, res, registTenantAdmin));
 
+// Lookup user pool for any user - no user data returned
+app.get('/user/pool/:id', async (req, res) => await common(req, res, lookupUser));
+
 /**
- * WARNING: THIS WILL REMOVE THE DYNAMODB TABLES FOR THIS QUICKSTART.
- * NOTE: In production, it is recommendended to have a backup of all Tables, and only manage these tables from corresponding micro-services.
- * Delete DynamoDB Tables required for the Infrastructure including the User, Tenant, Product, and Order Tables.
+ * WARNING: THIS WILL REMOVE ALL THE COGNITO USER POOLS, IDENTITY POOLS, ROLES,
+ * AND POLICIES CREATED BY THIS QUICKSTART.
+ * Delete Infrastructure Created by Multi-tenant Identity Reference Architecture
  */
-app.delete('/user/tables', deleteTables);
+app.delete('/user/tenants', async (req, res) => await common(req, res, deleteTenant));
 
-// Start the service
-// app.listen(8080, () => console.log('User service started on port 8080'));
+/**
+ * Get a list of users using a tenant id to scope the list
+ */
+app.get('/users', async (req, res) => await common(req, res, getUsers));
+
+/** Get user attributes */
+// app.get('/user/:id', async (req, res) => await common(req, res, getUser));
+
+// app.delete('/user/tables', deleteTables);
+
 export default app;
-
-// /**
-//  * WARNING: THIS WILL REMOVE ALL THE COGNITO USER POOLS, IDENTITY POOLS, ROLES, AND POLICIES CREATED BY THIS QUICKSTART.
-//  * Delete Infrastructure Created by Multi-tenant Identity Reference Architecture
-//  */
-// app.delete('/user/tenants', function (req, res) {
-//   winston.debug('Cleaning up Identity Reference Architecture: ');
-
-//   var input = {};
-//   tokenManager.getInfra(input, function (error, response) {
-//     // handle error first, so one less indentation later
-//     if (error) {
-//       res.status(400).send(error);
-//       return;
-//     } else {
-//       var infra = response;
-//       var items = Object.keys(infra).length;
-//       winston.debug(items + ' Tenants with Infrastructure');
-//       winston.debug('-------------------------------------');
-//       var pool = '';
-//       var i;
-//       // process each item in series
-//       async.eachSeries(
-//         infra,
-//         function (item, callback) {
-//           // execute your logic
-//           pool += item;
-
-//           // in this case item is infra[i] in the original code
-//           var UserPoolId = item.UserPoolId;
-//           var IdentityPoolId = item.IdentityPoolId;
-//           var systemAdminRole = item.systemAdminRole;
-//           var systemSupportRole = item.systemSupportRole;
-//           var trustRole = item.trustRole;
-//           var systemAdminPolicy = item.systemAdminPolicy;
-//           var systemSupportPolicy = item.systemSupportPolicy;
-
-//           // delete user pool
-//           cognitoUsers
-//             .deleteUserPool(UserPoolId)
-//             .then(function (userPoolData) {
-//               //delete identity pool
-//               return cognitoUsers.deleteIdentityPool(IdentityPoolId);
-//             })
-//             .then(function (identityPoolData) {
-//               //delete role
-//               return cognitoUsers.detachRolePolicy(systemAdminPolicy, systemAdminRole);
-//             })
-//             .then(function (detachSystemRolePolicyData) {
-//               //delete role
-//               return cognitoUsers.detachRolePolicy(systemSupportPolicy, systemSupportRole);
-//             })
-//             .then(function (detachSupportRolePolicyData) {
-//               //delete role
-//               return cognitoUsers.deletePolicy(systemAdminPolicy);
-//             })
-//             .then(function (systemAdminPolicyData) {
-//               //delete role
-//               return cognitoUsers.deletePolicy(systemSupportPolicy);
-//             })
-//             .then(function (systemSupportPolicyData) {
-//               //delete role
-//               return cognitoUsers.deleteRole(systemAdminRole);
-//             })
-//             .then(function (systemAdminRoleData) {
-//               //delete role
-//               return cognitoUsers.deleteRole(systemSupportRole);
-//             })
-//             .then(function (systemSupportRoleData) {
-//               //delete role
-//               return cognitoUsers.deleteRole(trustRole);
-//             })
-//             .then(function () {
-//               // promises over, return callback without errors
-//               callback();
-//               return;
-//             })
-//             .catch(function (err) {
-//               // we caught an error, return it back to async.
-//               callback(err);
-//               return;
-//             });
-//         },
-//         function (err) {
-//           // if err is not nil, return 400
-//           if (err) {
-//             winston.debug(err);
-//             res.status(400).send(err);
-//             return;
-//           }
-//           res.status(200).send('Success');
-//         }
-//       );
-//     }
-//   });
-// });
 
 // /**
 //  * Get a list of users using a tenant id to scope the list
@@ -653,18 +562,3 @@ export default app;
 //   });
 // }
 
-// /**
-//  * Extract a token from the header and return its embedded user pool id
-//  * @param req The request with the token
-//  * @returns The user pool id from the token
-//  */
-// function getUserPoolIdFromRequest(req) {
-//   var token = req.get('Authorization');
-//   var userPoolId;
-//   var decodedToken = tokenManager.decodeToken(token);
-//   if (decodedToken) {
-//     var pool = decodedToken.iss;
-//     userPoolId = pool.substring(pool.lastIndexOf('/') + 1);
-//   }
-//   return userPoolId;
-// }

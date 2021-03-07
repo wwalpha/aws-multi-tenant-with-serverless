@@ -7,6 +7,7 @@ const config: Config.InitialOptions = {
   transformIgnorePatterns: ['/node_modules/'],
   testPathIgnorePatterns: ['/node_modules/'],
   setupFiles: ['dotenv/config'],
+  testTimeout: 10000,
 };
 
 export default config;
