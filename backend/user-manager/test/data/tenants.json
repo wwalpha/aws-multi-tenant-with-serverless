@@ -1,0 +1,17 @@
+[{
+  "accountName": "dxc",
+  "companyName": "dxc",
+  "email": "wwalpha@gmail.com",
+  "id": "TENANT3f05ad97e0814a17b20d8c0cf265da44",
+  "IdentityPoolId": "us-west-2:44e56880-94cf-48b4-8fae-2d730d345e51",
+  "ownerName": "wwalpha@gmail.com",
+  "status": "Active",
+  "systemAdminPolicy": "arn:aws:iam::708988062417:policy/TENANT3f05ad97e0814a17b20d8c0cf265da44-TenantAdminPolicy",
+  "systemAdminRole": "TENANT3f05ad97e0814a17b20d8c0cf265da44-TenantAdmin",
+  "systemSupportPolicy": "arn:aws:iam::708988062417:policy/TENANT3f05ad97e0814a17b20d8c0cf265da44-TenantUserPolicy",
+  "systemSupportRole": "TENANT3f05ad97e0814a17b20d8c0cf265da44-TenantUser",
+  "tier": "Standard Tier",
+  "trustRole": "TENANT3f05ad97e0814a17b20d8c0cf265da44-Trust",
+  "userName": "wwalpha@gmail.com",
+  "UserPoolId": "us-west-2_DoZUpCRPZ"
+}]

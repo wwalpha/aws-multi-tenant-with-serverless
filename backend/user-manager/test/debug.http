@@ -13,3 +13,16 @@ Content-Type: application/json
   "lastName": "last222",
   "tier": "prod"
 }
+
+# lookup user
+GET http://localhost:8080/user/pool/f8917caf-aa3f-4b22-b33f-846b45ce9924
+
+#
+DELETE http://localhost:8080/user/tenants
+Content-Type: application/json
+
+{
+  "tenantId": "TENANT0000000002",
+  "userPoolId": "ap-northeast-2_GCdgecgMm",
+  "identityPoolId": "ap-northeast-2:a5e20b4b-565b-4c89-883e-49ea6880f145"
+}
