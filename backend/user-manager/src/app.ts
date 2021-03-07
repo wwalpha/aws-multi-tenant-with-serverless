@@ -7,6 +7,7 @@ import {
   createNewUser,
   deleteRole,
   getCredentialsFromToken,
+  getUserPoolIdFromRequest,
   lookupUserPoolData,
   provisionAdminUserWithRoles,
 } from './utils';
@@ -175,23 +176,36 @@ export const deleteTenant = async (req: express.Request<any, any, User.DeleteTen
   }
 };
 
-export const getUsers = async (req: express.Request) => {
+/**
+ * Get all users from cognito
+ *
+ * @param req request
+ * @returns all users
+ */
+export const getUsers = async (req: express.Request): Promise<User.GetUsersResponse[]> => {
   // get credentials
   const credentials = await getCredentialsFromToken(req);
+  // user pool id
+  const userPoolId = getUserPoolIdFromRequest(req);
 
-  // function (req, res) {
-  //   tokenManager.getCredentialsFromToken(req, function (credentials) {
-  //     var userPoolId = getUserPoolIdFromRequest(req);
-  //     cognitoUsers
-  //       .getUsersFromPool(credentials, userPoolId, configuration.aws_region)
-  //       .then(function (userList) {
-  //         res.status(200).send(userList);
-  //       })
-  //       .catch(function (error) {
-  //         res.status(400).send('Error retrieving user list: ' + error.message);
-  //       });
-  //   });
-  // }
+  // identity provider
+  const provider = new CognitoIdentityServiceProvider({ credentials });
+  // all users
+  const results = await provider.listUsers({ UserPoolId: userPoolId }).promise();
+  // create response
+  let users = results.Users?.map<User.GetUsersResponse>((u) => ({
+    userName: u.Username,
+    enabled: u.Enabled,
+    confirmedStatus: u.UserStatus,
+    dateCreated: u.UserCreateDate,
+    firstName: u.Attributes?.find((item) => item.Name === 'given_name')?.Value,
+    lastName: u.Attributes?.find((item) => item.Name === 'family_name')?.Value,
+    role: u.Attributes?.find((item) => item.Name === 'custom:role')?.Value,
+    tier: u.Attributes?.find((item) => item.Name === 'custom:tier')?.Value,
+    email: u.Attributes?.find((item) => item.Name === 'custom:email')?.Value,
+  }));
+
+  return (users ??= []);
 };
 
 // health check

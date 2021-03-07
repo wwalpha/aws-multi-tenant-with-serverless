@@ -557,7 +557,7 @@ export const createNewUser = async (
     identityPoolId: cognito.IdentityPoolId,
     ownerName: request.companyName,
     email: request.userName,
-    id: v4(),
+    id: request.userName,
     role: role,
   };
 

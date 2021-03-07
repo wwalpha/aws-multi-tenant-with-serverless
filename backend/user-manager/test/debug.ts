@@ -3,8 +3,8 @@ import { CognitoIdentityServiceProvider } from 'aws-sdk';
 const client = new CognitoIdentityServiceProvider({ region: 'ap-northeast-2' });
 
 const start = async () => {
-  const clientId = '44t0o5satc51h35vv6cqbkf1tv';
-  const userPoolId = 'ap-northeast-2_WOVrhMnzO';
+  const clientId = '6m9r9rsoop8pnt3sorpjldl12d';
+  const userPoolId = 'ap-northeast-2_yNHLrJmiV';
   const username = 'wwalpha@gmail.com';
 
   const r = await client
@@ -14,7 +14,7 @@ const start = async () => {
       AuthFlow: 'ADMIN_NO_SRP_AUTH',
       AuthParameters: {
         USERNAME: username,
-        PASSWORD: 'OPU1Ntr/',
+        PASSWORD: '3mTdy%zV',
         // SECRET_HASH: '11saftm9hba0dsra1p0cn774vcgdk35iv6ftt0d3v6n4vk6s8le1',
       },
     })

@@ -1,6 +1,15 @@
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
-import { getUser, healthCheck, lookupUser, registTenantAdmin, deleteTables, common, deleteTenant } from './app';
+import {
+  getUser,
+  healthCheck,
+  lookupUser,
+  registTenantAdmin,
+  deleteTables,
+  common,
+  deleteTenant,
+  getUsers,
+} from './app';
 
 // instantiate application
 var app = express();
@@ -561,4 +570,3 @@ export default app;
 //     });
 //   });
 // }
-

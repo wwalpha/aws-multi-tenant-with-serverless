@@ -63,4 +63,5 @@ const deleteRole = async (roleName: string, policy?: string) => {
   await iam.deleteRole({ RoleName: roleName }).promise();
 };
 
-initialize();
+// initialize();
+// clean();

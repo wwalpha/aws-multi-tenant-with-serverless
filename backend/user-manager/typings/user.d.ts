@@ -65,3 +65,27 @@ export interface DeleteTenantRequest {
 }
 
 export interface DeleteTenantResponse {}
+
+/**
+ * Cognito User Details
+ */
+export interface GetUsersResponse {
+  /** Username */
+  userName?: string;
+  /** User enabled */
+  enabled?: boolean;
+  /** User status */
+  confirmedStatus?: string;
+  /** User created date */
+  dateCreated?: Date;
+  /** User first name */
+  firstName?: string;
+  /** User last name */
+  lastName?: string;
+  /** Email */
+  email?: string;
+  /** Role */
+  role?: string;
+  /** Tier */
+  tier?: string;
+}
