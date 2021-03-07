@@ -19,10 +19,10 @@ export type CognitoToken = {
   'custom:role': string;
 };
 
-export interface UserPoolDetails {
-  userPoolId: string;
-  userPoolClientId: string;
-  identityPoolId: string;
+export interface CognitoDetails {
+  userPoolId?: string;
+  userPoolClientId?: string;
+  identityPoolId?: string;
 }
 
 /** get credentials from user token request */

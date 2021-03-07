@@ -1,11 +1,11 @@
-export interface UserTableKey {
+export interface UserKey {
   // tenant id
   tenantId: string;
   // id
   id: string;
 }
 
-export interface UserTableItem extends UserTableKey {
+export interface UserItem extends UserKey {
   // cognito user pool id
   userPoolId: string;
   // cognito user pool client id
@@ -45,12 +45,12 @@ export interface TenantItem {
   userName: string;
   email: string;
   status: string;
-  // systemAdminPolicy: string;
-  // systemAdminRole: string;
-  // systemSupportPolicy: string;
-  // systemSupportRole: string;
+  systemAdminPolicy: string;
+  systemAdminRole: string;
+  systemSupportPolicy: string;
+  systemSupportRole: string;
   tier: string;
-  // trustRole: string;
+  trustRole: string;
   identityPoolId: string;
   userPoolId: string;
 }
