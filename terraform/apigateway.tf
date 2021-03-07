@@ -37,7 +37,7 @@ resource "aws_apigatewayv2_integration" "auth" {
   connection_id      = aws_apigatewayv2_vpc_link.private.id
   integration_type   = "HTTP_PROXY"
   integration_method = "POST"
-  integration_uri    = aws_service_discovery_service.backend_auth.arn
+  integration_uri    = aws_service_discovery_service.auth.arn
 }
 
 # ----------------------------------------------------------------------------------------------

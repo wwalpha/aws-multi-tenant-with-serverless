@@ -82,7 +82,7 @@ resource "aws_ecs_service" "backend_auth" {
   # }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.backend_auth.arn
+    registry_arn = aws_service_discovery_service.auth.arn
   }
 
   provisioner "local-exec" {
