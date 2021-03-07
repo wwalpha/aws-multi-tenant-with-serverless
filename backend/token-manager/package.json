@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node index.js",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "prebuild:docker": "cp ../typings/* typings/ --recursive",
     "build:docker": "docker build -t saas/token .",
     "debug": "nodemon",

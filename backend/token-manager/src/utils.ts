@@ -14,7 +14,7 @@ winston.add(new winston.transports.Console({ level: 'debug' }));
  * @param username The username to lookup
  * @return params object with user pool and idToken
  */
-export const getUserPoolWithParams = async (userName: string): Promise<Token.UserPoolDetails> => {
+export const getUserPoolWithParams = async (userName: string): Promise<Token.CognitoDetails> => {
   const userURL = `${Environments.SERVICE_ENDPOINT_USER}/pool/${userName}`;
 
   try {
@@ -28,7 +28,11 @@ export const getUserPoolWithParams = async (userName: string): Promise<Token.Use
     const { userPoolId, userPoolClientId, identityPoolId } = response.data;
 
     // return result
-    return { userPoolId, userPoolClientId, identityPoolId };
+    return {
+      userPoolId,
+      userPoolClientId,
+      identityPoolId,
+    };
   } catch (err) {
     throw new Error('Error loading user: ' + err);
   }
@@ -37,11 +41,11 @@ export const getUserPoolWithParams = async (userName: string): Promise<Token.Use
 /**
  * Authenticate the user in the user pool
  *
- * @param userPool The pool to use for authentication
+ * @param cognito The pool to use for authentication
  * @param idToken The id token for this session
  */
 export const authenticateUserInPool = async (
-  userPool: Token.UserPoolDetails,
+  cognito: Token.CognitoDetails,
   token: string,
   iss: string
 ): Promise<CognitoIdentity.Credentials | undefined> => {
@@ -51,7 +55,7 @@ export const authenticateUserInPool = async (
   // get identity id
   const idResult = await client
     .getId({
-      IdentityPoolId: userPool.identityPoolId,
+      IdentityPoolId: cognito.identityPoolId as string,
       Logins: {
         [provider]: token,
       },
