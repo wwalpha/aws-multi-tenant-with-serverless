@@ -9,7 +9,6 @@ export interface TenantAdminRegistRequest {
   userName: string;
   firstName: string;
   lastName: string;
-  email: string;
   tier: string;
 }
 
@@ -24,8 +23,6 @@ export interface TenantAdminRegistResponse {
   identityPoolId: string;
   /** user id */
   id: string;
-  /** user name */
-  userName: string;
   /** email */
   email: string;
   /** first name */

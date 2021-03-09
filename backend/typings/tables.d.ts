@@ -39,18 +39,16 @@ export interface TenantKey {
 }
 
 export interface TenantItem {
-  accountName: string;
-  companyName: string;
   ownerName: string;
-  userName: string;
-  email: string;
+  companyName: string;
   status: string;
-  systemAdminPolicy: string;
-  systemAdminRole: string;
-  systemSupportPolicy: string;
-  systemSupportRole: string;
   tier: string;
-  trustRole: string;
+  // systemAdminPolicy: string;
+  // systemAdminRole: string;
+  // systemSupportPolicy: string;
+  // systemSupportRole: string;
+  // trustRole: string;
   identityPoolId: string;
   userPoolId: string;
+  clientId: string;
 }

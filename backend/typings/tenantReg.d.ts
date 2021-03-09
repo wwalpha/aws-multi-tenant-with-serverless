@@ -1,10 +1,14 @@
 export interface RegistTenantRequest {
-  userName: string;
-  companyName: string;
-  firstName: string;
-  lastName: string;
-  tier: string;
+  /** email address */
   email: string;
+  /** company name */
+  companyName: string;
+  /** first name */
+  firstName: string;
+  /** last name */
+  lastName: string;
+  /** tier */
+  tier: string;
 }
 
 export interface RegistTenantResponse {

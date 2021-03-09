@@ -5,22 +5,20 @@ export interface HealthCheck {
 
 /** create tenant request */
 export interface RegistTenantRequest {
-  // cognito user pool id
-  userPoolId: string;
-  // cognito identity pool id
-  identityPoolId: string;
   // owner name
   ownerName: string;
-  // account name
-  accountName: string;
-  // username
-  userName: string;
   // email
   email: string;
   // company name
   companyName: string;
   // tier
   tier: string;
+  // cognito user pool id
+  userPoolId: string;
+  // cognito user pool client id
+  clientId: string;
+  // cognito identity pool id
+  identityPoolId: string;
 }
 
 /** create tenant response */
