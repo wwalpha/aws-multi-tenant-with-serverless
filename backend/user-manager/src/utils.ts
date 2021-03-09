@@ -195,7 +195,7 @@ const createUserPoolClient = async (
     .createUserPoolClient({
       UserPoolId: userPool.Id as string,
       ClientName: userPool.Name as string,
-      GenerateSecret: true,
+      GenerateSecret: false,
       RefreshTokenValidity: 0,
       ReadAttributes: [
         'email',
@@ -217,6 +217,12 @@ const createUserPoolClient = async (
         'preferred_username',
         'custom:tier',
         'custom:role',
+      ],
+      ExplicitAuthFlows: [
+        'ALLOW_ADMIN_USER_PASSWORD_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+        'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_USER_SRP_AUTH',
       ],
     })
     .promise();
