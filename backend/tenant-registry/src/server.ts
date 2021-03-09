@@ -14,7 +14,7 @@ app.use(urlencoded({ extended: false }));
 app.get('/reg/health', async (req, res) => await common(req, res, healthCheck));
 
 /** Register a new tenant */
-app.post('/reg', registTenant);
+app.post('/reg', async (req, res) => await common(req, res, registTenant));
 
 // Start the servers
 export default app;

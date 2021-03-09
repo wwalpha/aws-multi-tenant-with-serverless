@@ -31,10 +31,6 @@ export interface GetTenantRequest {}
 export interface GetTenantResponse {
   // owner name
   ownerName: string;
-  // account name
-  accountName: string;
-  // username
-  userName: string;
   // email
   email: string;
   // company name
@@ -45,6 +41,8 @@ export interface GetTenantResponse {
   tier: string;
   // cognito user pool id
   userPoolId: string;
+  // cognito user pool client id
+  clientId: string;
   // cognito identity pool id
   identityPoolId: string;
 }

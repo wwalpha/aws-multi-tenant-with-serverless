@@ -1,12 +1,12 @@
 import AWS, { CognitoIdentity, CognitoIdentityServiceProvider } from 'aws-sdk';
 import express from 'express';
-import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
 import { Environments } from './consts';
 import {
   createNewUser,
   deleteRole,
   getCredentialsFromToken,
+  getLogger,
   getUserPoolIdFromRequest,
   lookupUserPoolData,
   provisionAdminUserWithRoles,
@@ -14,7 +14,7 @@ import {
 import { User } from 'typings';
 
 // Init the winston log level
-winston.add(new winston.transports.Console({ level: 'debug' }));
+const logger = getLogger();
 
 // update aws config
 AWS.config.update({
@@ -24,14 +24,16 @@ AWS.config.update({
 
 /** catch undefined errors */
 export const common = async (req: express.Request, res: express.Response, app: any) => {
-  winston.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info(`request: ${JSON.stringify(req.body)}`);
 
   try {
     const results = await app(req, res);
 
+    logger.info('response', results);
+
     res.status(200).send(results);
   } catch (err) {
-    winston.error(err);
+    logger.error(err);
 
     res.status(400).send(err);
   }
@@ -43,7 +45,7 @@ export const common = async (req: express.Request, res: express.Response, app: a
  * @param req request
  */
 export const lookupUser = async (req: express.Request): Promise<User.LookupUserResponse> => {
-  winston.debug('Looking up user pool data for: ' + req.params.id);
+  logger.debug('Looking up user pool data for: ' + req.params.id);
 
   // find user in user pool
   const user = await lookupUserPoolData(req.params.id, true);
@@ -67,7 +69,7 @@ export const lookupUser = async (req: express.Request): Promise<User.LookupUserR
  * @returns
  */
 export const getUser = async (req: express.Request): Promise<User.GetUserResponse> => {
-  winston.debug('Getting user id: ' + req.params.id);
+  logger.debug('Getting user id: ' + req.params.id);
 
   // tokenManager.getCredentialsFromToken(req, function (credentials) {
   //   // get the tenant id from the request
@@ -99,6 +101,8 @@ export const getUser = async (req: express.Request): Promise<User.GetUserRespons
 export const registTenantAdmin = async (
   req: express.Request<any, any, User.TenantAdminRegistRequest>
 ): Promise<User.TenantAdminRegistResponse> => {
+  logger.debug('Creating tenant admin user.');
+
   const request = req.body;
 
   // create cognito user pool and identity pool
@@ -116,27 +120,22 @@ export const registTenantAdmin = async (
  * @param req request
  * @param res response
  */
-export const deleteTables = async (req: express.Request, res: express.Response) => {
+export const deleteTables = async (req: express.Request) => {
   const helper = new DynamodbHelper();
 
-  try {
-    // user table
-    await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_USER }).promise();
+  // user table
+  await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_USER }).promise();
 
-    // product table
-    await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
+  // product table
+  await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
 
-    // order table
-    await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
+  // order table
+  await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
 
-    // tenant table
-    await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_TENANT }).promise();
+  // tenant table
+  await helper.getClient().deleteTable({ TableName: Environments.TABLE_NAME_TENANT }).promise();
 
-    res.status(200).send('Initiated removal of DynamoDB Tables');
-  } catch (err) {
-    winston.debug(err);
-    res.status(400).send(err);
-  }
+  return 'Initiated removal of DynamoDB Tables';
 };
 
 /**
@@ -145,7 +144,7 @@ export const deleteTables = async (req: express.Request, res: express.Response) 
  * @param req request
  */
 export const deleteTenant = async (req: express.Request<any, any, User.DeleteTenantRequest>) => {
-  winston.debug('Cleaning up Identity Reference Architecture');
+  logger.debug('Cleaning up Identity Reference Architecture');
 
   const { tenantId, userPoolId, identityPoolId } = req.body;
 

@@ -45,6 +45,15 @@ services:
     networks:
       - internal
     env_file: ${PWD}/.env
+  tenantReg:
+    image: saas/tenant-registry
+    container_name: tenant-registry
+    hostname: tenant-reg-service
+    ports:
+      - 8084:8080
+    networks:
+      - internal
+    env_file: ${PWD}/.env
 
 networks:
   internal:

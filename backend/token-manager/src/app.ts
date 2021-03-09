@@ -1,20 +1,21 @@
 import express from 'express';
-import winston from 'winston';
-import { authenticateUserInPool, decodeToken, getUserPoolWithParams } from './utils';
+import { authenticateUserInPool, decodeToken, getLogger, getUserPoolWithParams } from './utils';
 import { Token } from 'typings';
 
-winston.add(new winston.transports.Console({ level: 'debug' }));
+const logger = getLogger();
 
 /** catch undefined errors */
 export const common = async (req: express.Request, res: express.Response, app: any) => {
-  winston.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info(`request: ${JSON.stringify(req.body)}`);
 
   try {
     const results = await app(req, res);
 
+    logger.info('response', results);
+
     res.status(200).send(results);
   } catch (err) {
-    winston.error(err);
+    logger.error(err);
 
     res.status(400).send(err.message);
   }
@@ -30,6 +31,8 @@ export const healthCheck = async (): Promise<Token.HealthCheck> => ({ service: '
  * @returns The access credentials
  */
 export const getCredentialsFromToken = async (req: express.Request): Promise<Token.UserTokenResponse | undefined> => {
+  logger.debug('get credentails from authorization token');
+
   const request = req.body as Token.UserTokenRequest;
 
   // validate
@@ -48,11 +51,13 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Tok
   // get username
   const username = token['cognito:username'];
   // get userpool infos
-  const userInfo = await getUserPoolWithParams(username);
+  const userInfo = await getUserPoolWithParams(request.token, username);
   // get
   const credetials = await authenticateUserInPool(userInfo, request.token, token.iss);
 
   if (!credetials) throw new Error('Credentials create failure.');
+
+  logger.debug('retrive credentials success.');
 
   return {
     accessKeyId: credetials.AccessKeyId as string,

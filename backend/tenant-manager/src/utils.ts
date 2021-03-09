@@ -19,8 +19,6 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Cre
   // get token
   const token = bearerToken.split(' ')[1];
 
-  console.log(Endpoints.CREDENTIALS_FROM_TOKEN);
-
   // get credentials from user token
   const res = await axios.post<Token.UserTokenResponse>(Endpoints.CREDENTIALS_FROM_TOKEN, {
     token,

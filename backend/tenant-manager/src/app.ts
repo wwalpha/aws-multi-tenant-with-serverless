@@ -1,18 +1,27 @@
-import express, { request } from 'express';
+import express from 'express';
 import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
 import { getCredentialsFromToken } from './utils';
 import { Tenant, Tables } from 'typings';
 import { Environments } from './consts';
 
-winston.add(new winston.transports.Console({ level: 'debug' }));
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: {
+    service: 'tenant-service',
+  },
+  transports: [new winston.transports.Console({ level: 'debug' })],
+});
 
 /** catch undefined errors */
 export const common = async (req: express.Request, res: express.Response, app: any) => {
-  winston.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info(`request: ${JSON.stringify(req.body)}`);
 
   try {
     const results = await app(req, res);
+
+    logger.info('response', results);
 
     res.status(200).send(results);
   } catch (err) {
@@ -32,10 +41,9 @@ export const registTenant = async (
   const tenantId = req.params.id;
   const request = req.body;
 
-  winston.debug('Creating Tenant: ' + tenantId);
+  logger.debug(`Creating Tenant: ${tenantId}`);
 
   const client = new DynamodbHelper();
-
   const item: Tables.TenantItem = {
     // @ts-ignore
     id: tenantId,
@@ -49,7 +57,7 @@ export const registTenant = async (
     Item: item,
   });
 
-  winston.debug(`Tenant ${tenantId} created`);
+  logger.debug(`Tenant ${tenantId} created`);
 
   return {
     status: 'success',
@@ -78,14 +86,13 @@ export const getTenant = async (req: express.Request): Promise<Tenant.GetTenantR
   }
 
   return {
-    accountName: tenant.Item.accountName,
     companyName: tenant.Item.companyName,
     ownerName: tenant.Item.ownerName,
-    userName: tenant.Item.userName,
-    email: tenant.Item.email,
+    email: tenant.Item.ownerName,
     tier: tenant.Item.tier,
     status: tenant.Item.status,
     userPoolId: tenant.Item.userPoolId,
+    clientId: tenant.Item.clientId,
     identityPoolId: tenant.Item.identityPoolId,
   };
 };
@@ -176,14 +183,13 @@ export const getAllTenants = async (
   });
 
   const response = results?.Items?.map<Tenant.GetTenantResponse>((item) => ({
-    accountName: item.accountName,
-    companyName: item.companyName,
     ownerName: item.ownerName,
-    userName: item.userName,
-    email: item.email,
+    email: item.ownerName,
+    companyName: item.companyName,
     tier: item.tier,
     status: item.status,
     userPoolId: item.userPoolId,
+    clientId: item.clientId,
     identityPoolId: item.identityPoolId,
   }));
 

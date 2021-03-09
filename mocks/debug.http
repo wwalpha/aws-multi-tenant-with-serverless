@@ -1,6 +1,7 @@
-GET http://127.0.0.1:8080/reg/health
 
-POST http://127.0.0.1:8080/reg
+GET http://127.0.0.1:8084/reg/health
+
+POST http://127.0.0.1:8084/reg
 Content-Type: application/json
 
 {

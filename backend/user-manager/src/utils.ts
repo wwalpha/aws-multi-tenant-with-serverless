@@ -3,16 +3,27 @@ import { CredentialsOptions } from 'aws-sdk/lib/credentials';
 import express from 'express';
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
 import { ADMIN_POLICY, COGNITO_PRINCIPALS, Environments, USER_POLICY } from './consts';
 import { Tables, Token, User } from 'typings';
-import { v4 } from 'uuid';
 
 // update aws config
 AWS.config.update({
   region: Environments.AWS_DEFAULT_REGION,
   dynamodb: { endpoint: Environments.AWS_ENDPOINT_URL },
 });
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: {
+    service: 'user-service',
+  },
+  transports: [new winston.transports.Console({ level: 'debug' })],
+});
+
+export const getLogger = () => logger;
 
 /**
  * provision cognito and admin user by system credentials
@@ -22,6 +33,8 @@ AWS.config.update({
 export const provisionAdminUserWithRoles = async (
   request: User.TenantAdminRegistRequest
 ): Promise<User.CognitoInfos> => {
+  logger.debug('Provision admin user with roles.');
+
   const provider = new CognitoIdentityServiceProvider();
 
   // create user pool
@@ -68,6 +81,8 @@ const createUserPool = async (
   provider: CognitoIdentityServiceProvider,
   tenantId: string
 ): Promise<CognitoIdentityServiceProvider.UserPoolType> => {
+  winston.debug('Provision cognito user pool.');
+
   const result = await provider
     .createUserPool({
       PoolName: tenantId,
@@ -176,6 +191,8 @@ const createUserPool = async (
 
   if (!userPool) throw new Error('Create user pool failed.');
 
+  winston.debug(`Cognito user pool created. ${userPool.Id}`);
+
   return userPool;
 };
 
@@ -190,6 +207,8 @@ const createUserPoolClient = async (
   provider: CognitoIdentityServiceProvider,
   userPool: CognitoIdentityServiceProvider.UserPoolType
 ) => {
+  winston.debug('Provision cognito user pool client.');
+
   // create user pool client
   const client = await provider
     .createUserPoolClient({
@@ -231,6 +250,8 @@ const createUserPoolClient = async (
 
   if (!userPoolClient) throw new Error('Create user pool client failed.');
 
+  winston.debug(`Cognito user pool client created. ${userPoolClient.ClientId}`);
+
   return userPoolClient;
 };
 
@@ -242,6 +263,8 @@ const createUserPoolClient = async (
  * @param userPoolClientName cognito user pool client name
  */
 const createIdentiyPool = async (userPoolId: string, userPoolClientId: string, userPoolClientName: string) => {
+  winston.debug('Provision cognito identity pool...');
+
   const identity = new CognitoIdentity();
 
   const providerName = `cognito-idp.${Environments.AWS_DEFAULT_REGION}.amazonaws.com/${userPoolId}`;
@@ -259,6 +282,8 @@ const createIdentiyPool = async (userPoolId: string, userPoolClientId: string, u
       ],
     })
     .promise();
+
+  winston.debug(`Cognito identity pool created. ${identityPool.IdentityPoolId}`);
 
   return identityPool as CognitoIdentity.IdentityPool;
 };
@@ -595,7 +620,6 @@ export const createNewUser = async (
 
   const helper = new DynamodbHelper({
     credentials: credentials,
-    options: { endpoint: Environments.AWS_ENDPOINT_URL },
   });
 
   // add user

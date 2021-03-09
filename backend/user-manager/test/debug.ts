@@ -1,11 +1,15 @@
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import { Auth } from '@aws-amplify/auth';
 
 const client = new CognitoIdentityServiceProvider({ region: 'ap-northeast-2' });
 
 const start = async () => {
-  const clientId = '6m9r9rsoop8pnt3sorpjldl12d';
-  const userPoolId = 'ap-northeast-2_yNHLrJmiV';
+  const clientId = '2d2f9a11lhbv4ud2b7jp061dbv';
+  const identityPoolId = 'ap-northeast-2:d01c46ff-ed85-4ca0-ad0a-01aa21c17716';
+  const userPoolId = 'ap-northeast-2_SvUrSaeFW';
   const username = 'wwalpha@gmail.com';
+  const oldPassword = 'kI9ZRrX0';
+  const newPassword = 'Session10+';
 
   const r = await client
     .adminInitiateAuth({
@@ -14,8 +18,7 @@ const start = async () => {
       AuthFlow: 'ADMIN_NO_SRP_AUTH',
       AuthParameters: {
         USERNAME: username,
-        PASSWORD: '3mTdy%zV',
-        // SECRET_HASH: '11saftm9hba0dsra1p0cn774vcgdk35iv6ftt0d3v6n4vk6s8le1',
+        PASSWORD: oldPassword,
       },
     })
     .promise();
@@ -27,15 +30,64 @@ const start = async () => {
       ChallengeName: r.ChallengeName as string,
       ChallengeResponses: {
         USERNAME: username,
-        NEW_PASSWORD: 'Session10+',
+        NEW_PASSWORD: newPassword,
       },
       Session: r.Session,
     })
     .promise();
 
   console.log(t);
-  // eyJraWQiOiJ5c0p1UG1zTHlKYk82aVVCSW93VjI0UTVzRktcL202YmZyVUkrVW9JY0ZtTT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI1NTNiNjUwZC1mOWI1LTQzOGMtYWI3My00ZTg3OWJjODlhY2YiLCJjdXN0b206dGllciI6InByb2QiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAuYXAtbm9ydGhlYXN0LTIuYW1hem9uYXdzLmNvbVwvYXAtbm9ydGhlYXN0LTJfV09WcmhNbnpPIiwiY29nbml0bzp1c2VybmFtZSI6Ind3YWxwaGFAZ21haWwuY29tIiwiY3VzdG9tOnRlbmFudF9pZCI6IlRFTkFOVDAwMDAwMDAwMDIiLCJnaXZlbl9uYW1lIjoiZmlyc3QxMTEiLCJhdWQiOiI0NHQwbzVzYXRjNTFoMzV2djZjcWJrZjF0diIsImV2ZW50X2lkIjoiMjYwNDQyNzktYWFiYS00YzJiLWI3NjktOWZhNGVjMzc4OWZjIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE2MTUwODI5MTIsImV4cCI6MTYxNTA4NjUxMiwiY3VzdG9tOnJvbGUiOiJURU5BTlRfQURNSU4iLCJpYXQiOjE2MTUwODI5MTIsImZhbWlseV9uYW1lIjoibGFzdDIyMiIsImVtYWlsIjoid3dhbHBoYUBnbWFpbC5jb20ifQ.OowtDzdwzXhWAAvtC3_QXzVW3CmpneaxT9niG7e2CFvwqmeWxQ4y060Bpst0dGsIU4GwSbIMElZpdf3v3VIOTwDaT154LhGUbDrZemzNZx8jUCHHH8jWDJbphSToCqj5mTjzBHmOXm-IGx-436aGDfgJ2lhEAJ-VLhS1NVmP0k9-kCmjQ7zRGTccz5PfFshXhBtiSwYZgPZNn81jdPA3zeqfDZwec1yBKUQBo3L85vEQidylzGz9h6ZKKs1DcE_oKk2hLmwj3rh56RCXLKnWrQ9_8YDqHUqKR6A9Zrt3v6le047kHfrZwep8nhdOmo3s7YOETe70LPhcM2eTv_ipWg
+
+  Auth.configure({
+    // REQUIRED only for Federated Authentication - Amazon Cognito Identity Pool ID
+    identityPoolId: identityPoolId,
+    // REQUIRED - Amazon Cognito Region
+    region: process.env.AWS_DEFAULT_REGION,
+    // OPTIONAL - Amazon Cognito User Pool ID
+    userPoolId: userPoolId,
+    // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+    userPoolWebClientId: clientId,
+  });
+
+  try {
+    const u = await Auth.signIn({
+      username: username,
+      password: newPassword,
+    });
+
+    console.log(u);
+  } catch (err) {
+    console.log(err);
+  }
 };
+
+const login = async () => {
+  const clientId = '5gs2i7ne84oiofi2nn63ikictt';
+  const identityPoolId = 'ap-northeast-2:b3cfab87-89df-47d1-a2cd-d8ab36721929';
+  const userPoolId = 'ap-northeast-2_rAWHgPY7W';
+  const username = 'wwalpha@gmail.com';
+  const newPassword = 'Session10+';
+
+  Auth.configure({
+    // REQUIRED only for Federated Authentication - Amazon Cognito Identity Pool ID
+    identityPoolId: identityPoolId,
+    // REQUIRED - Amazon Cognito Region
+    region: process.env.AWS_DEFAULT_REGION,
+    // OPTIONAL - Amazon Cognito User Pool ID
+    userPoolId: userPoolId,
+    // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+    userPoolWebClientId: clientId,
+  });
+
+  const u = await Auth.signIn({
+    username: username,
+    password: newPassword,
+  });
+
+  console.log(u);
+};
+
+// login();
 
 start();
 

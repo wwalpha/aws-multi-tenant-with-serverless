@@ -6,7 +6,16 @@ import winston from 'winston';
 import { Endpoints, Environments } from './const';
 import { Token, User } from 'typings';
 
-winston.add(new winston.transports.Console({ level: 'debug' }));
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: {
+    service: 'token-service',
+  },
+  transports: [new winston.transports.Console({ level: 'debug' })],
+});
+
+export const getLogger = () => logger;
 
 /**
  * Lookup the user pool from a user name
@@ -14,8 +23,14 @@ winston.add(new winston.transports.Console({ level: 'debug' }));
  * @param username The username to lookup
  * @return params object with user pool and idToken
  */
-export const getUserPoolWithParams = async (userName: string): Promise<Token.CognitoDetails> => {
-  const response = await axios.get<User.LookupUserResponse>(Endpoints.LOOKUP_USER(userName));
+export const getUserPoolWithParams = async (token: string, userName: string): Promise<Token.CognitoDetails> => {
+  logger.debug('lookup user is exist in cognito user pool');
+
+  const response = await axios.get<User.LookupUserResponse>(Endpoints.LOOKUP_USER(userName), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   // http error
   if (response.status !== 200) {
@@ -23,6 +38,8 @@ export const getUserPoolWithParams = async (userName: string): Promise<Token.Cog
   }
 
   const { userPoolId, userPoolClientId, identityPoolId } = response.data;
+
+  logger.debug('lookup user success.');
 
   // return result
   return {
