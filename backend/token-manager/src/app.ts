@@ -16,7 +16,7 @@ export const common = async (req: express.Request, res: express.Response, app: a
   } catch (err) {
     winston.error(err);
 
-    res.status(400).send(err);
+    res.status(400).send(err.message);
   }
 };
 
@@ -44,6 +44,7 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Tok
 
   // decode token
   const token = decodeToken(request.token);
+
   // get username
   const username = token['cognito:username'];
   // get userpool infos

@@ -9,3 +9,10 @@ export const Environments = {
   SERVICE_ENDPOINT_AUTH: `http://${process.env.SERVICE_ENDPOINT_AUTH}`,
   SERVICE_ENDPOINT_TOKEN: `http://${process.env.SERVICE_ENDPOINT_TOKEN}`,
 };
+
+export const Endpoints = {
+  /** get credentials from token */
+  CREDENTIALS_FROM_TOKEN: `${Environments.SERVICE_ENDPOINT_TOKEN}/user/token`,
+  /** lookup user url */
+  LOOKUP_USER: (userName: string) => `${Environments.SERVICE_ENDPOINT_USER}/user/pool/${userName}`,
+};

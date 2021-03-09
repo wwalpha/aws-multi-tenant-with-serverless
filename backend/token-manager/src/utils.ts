@@ -3,7 +3,7 @@ import express from 'express';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import winston from 'winston';
-import { Environments } from './const';
+import { Endpoints, Environments } from './const';
 import { Token, User } from 'typings';
 
 winston.add(new winston.transports.Console({ level: 'debug' }));
@@ -15,27 +15,21 @@ winston.add(new winston.transports.Console({ level: 'debug' }));
  * @return params object with user pool and idToken
  */
 export const getUserPoolWithParams = async (userName: string): Promise<Token.CognitoDetails> => {
-  const userURL = `${Environments.SERVICE_ENDPOINT_USER}/pool/${userName}`;
+  const response = await axios.get<User.LookupUserResponse>(Endpoints.LOOKUP_USER(userName));
 
-  try {
-    const response = await axios.get<User.LookupUserResponse>(userURL);
-
-    // http error
-    if (response.status !== 200) {
-      throw new Error('Lookup user failed.');
-    }
-
-    const { userPoolId, userPoolClientId, identityPoolId } = response.data;
-
-    // return result
-    return {
-      userPoolId,
-      userPoolClientId,
-      identityPoolId,
-    };
-  } catch (err) {
-    throw new Error('Error loading user: ' + err);
+  // http error
+  if (response.status !== 200) {
+    throw new Error('Lookup user failed.');
   }
+
+  const { userPoolId, userPoolClientId, identityPoolId } = response.data;
+
+  // return result
+  return {
+    userPoolId,
+    userPoolClientId,
+    identityPoolId,
+  };
 };
 
 /**
