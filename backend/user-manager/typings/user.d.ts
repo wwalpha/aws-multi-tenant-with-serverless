@@ -9,6 +9,7 @@ export interface TenantAdminRegistRequest {
   userName: string;
   firstName: string;
   lastName: string;
+  email: string;
   tier: string;
 }
 

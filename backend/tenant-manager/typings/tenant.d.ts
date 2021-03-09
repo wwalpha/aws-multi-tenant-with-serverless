@@ -1,5 +1,3 @@
-import { TenantItem } from './tables';
-
 export interface HealthCheck {
   service: string;
   isAlive: boolean;
