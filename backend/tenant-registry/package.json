@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "build": "tsc -p tsconfig.build.json",
-    "test": "jest",
-    "debug": "nodemon"
+    "build:docker": "cd .. && docker build --build-arg TARGET_FOLDER=tenant-registry -t saas/tenant-registry -f ./tenant-registry/Dockerfile .",
+    "debug": "nodemon",
+    "test": "jest"
   },
   "devDependencies": {
     "@jest/types": "^26.6.2",
@@ -29,6 +30,7 @@
     "aws-sdk": "^2.853.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
+    "dynamodb-helper": "https://github.com/wwalpha/dynamodb-helper.git",
     "express": "^4.17.1",
     "uuid": "^8.3.2",
     "winston": "^3.3.3"

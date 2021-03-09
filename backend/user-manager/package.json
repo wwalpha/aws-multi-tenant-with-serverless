@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "build": "tsc -p tsconfig.build.json",
-    "prebuild:docker": "cp ../typings/* typings/ --recursive",
-    "build:docker": "docker build -t saas/user .",
+    "build:docker": "cd .. && docker build --build-arg TARGET_FOLDER=user-manager -t saas/user -f ./user-manager/Dockerfile .",
     "test": "jest --maxWorkers=10 --detectOpenHandles",
     "debug": "nodemon"
   },
