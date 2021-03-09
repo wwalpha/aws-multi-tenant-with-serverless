@@ -1,42 +1,56 @@
 import axios from 'axios';
-import { RegistTenantRequest, TenantItem } from 'typings/types';
-import { TenantAdminRegistResponse } from 'typings/user';
+import express from 'express';
+import winston from 'winston';
+import { TenantReg, User } from 'typings';
+import { Environments } from './consts';
 
-const TENANT_SERVICE_ENDPOINT = `http://${process.env.TENANT_SERVICE_ENDPOINT}`;
-const USER_SERVICE_ENDPOINT = `http://${process.env.USER_SERVICE_ENDPOINT}`;
+// Init the winston log level
+winston.add(new winston.transports.Console({ level: 'debug' }));
 
-// tenant admin regist
-const TENANT_ADMIN_REGIST_URL = `${USER_SERVICE_ENDPOINT}/user/regist`;
-// create tenant
-const CREATE_TENANT_URL = `${TENANT_SERVICE_ENDPOINT}/tenant`;
-// get tenant
-const QUERY_TENANT_URL = `${TENANT_SERVICE_ENDPOINT}/tenant`;
+/** catch undefined errors */
+export const common = async (req: express.Request, res: express.Response, app: any) => {
+  winston.info(`request: ${JSON.stringify(req.body)}`);
+
+  try {
+    const results = await app(req, res);
+
+    res.status(200).send(results);
+  } catch (err) {
+    winston.error(err);
+
+    res.status(400).send(err);
+  }
+};
 
 /** check tenant exist */
 export const tenantExists = async (tenantId: string): Promise<boolean> => {
-  const res = await axios.get(`${QUERY_TENANT_URL}/id=${tenantId}`);
+  // const res = await axios.get(`${QUERY_TENANT_URL}/id=${tenantId}`);
 
-  return res.status === 200;
+  // return res.status === 200;
+  return false;
 };
 
 /** create tenant admin user */
-export const registTenantAdmin = async (request: RegistTenantRequest): Promise<TenantAdminRegistResponse> => {
+export const registTenantAdmin = async (
+  tenantId: string,
+  request: TenantReg.RegistTenantRequest
+): Promise<User.TenantAdminRegistResponse> => {
   // init the request with tenant data
-  const tenantAdminData = {
-    tenantId: request.tenantId,
+  const tenantAdminData: User.TenantAdminRegistRequest = {
+    tenantId: tenantId,
     companyName: request.companyName,
-    accountName: request.accountName,
-    ownerName: request.ownerName,
-    tier: request.tier,
-    email: request.email,
     userName: request.userName,
-    role: request.role,
     firstName: request.firstName,
     lastName: request.lastName,
+    tier: request.tier,
+    email: request.email,
   };
 
   // regist tenant admin
-  const res = await axios.post<TenantAdminRegistResponse>(TENANT_ADMIN_REGIST_URL, tenantAdminData);
+  const res = await axios.post<User.TenantAdminRegistResponse>(
+    `${Environments.SERVICE_ENDPOINT_USER}/user/reg`,
+    tenantAdminData
+  );
 
   if (res.status !== 200) {
     throw new Error(`Tenant admin create failed. ${res.data}`);
@@ -46,4 +60,7 @@ export const registTenantAdmin = async (request: RegistTenantRequest): Promise<T
 };
 
 /** save tenant informations */
-const saveTenant = async (item: TenantItem) => await axios.post(CREATE_TENANT_URL, item);
+export const saveTenant = async (item: any) => {
+  // const request: Tenant
+  // await axios.post(CREATE_TENANT_URL, item);
+};

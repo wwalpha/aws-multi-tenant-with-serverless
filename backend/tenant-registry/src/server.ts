@@ -1,23 +1,20 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+import { json, urlencoded } from 'body-parser';
 import { healthCheck, registTenant } from './app';
+import { common } from './utils';
 
 // Instantiate application
 const app = express();
 
 // Configure middleware
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
+app.use(json());
+app.use(urlencoded({ extended: false }));
+
+/** Get the health of the service */
+app.get('/reg/health', async (req, res) => await common(req, res, healthCheck));
 
 /** Register a new tenant */
 app.post('/reg', registTenant);
-
-/** Get the health of the service */
-app.get('/reg/health', healthCheck);
 
 // Start the servers
 export default app;
