@@ -1,19 +1,19 @@
-name: tenant-service
+name: token-service
 
 on:
   push:
     branches:
       - master
     paths:
-      - backend/tenant-manager/**
-      - .github/workflows/tenant.yml
+      - backend/token-manager/**
+      - .github/workflows/token.yml
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: saas/tenant
-  TAKS_DEFINITION: onecloud-saas-tenant
+  ECR_REPOSITORY: saas/token
+  TAKS_DEFINITION: onecloud-saas-token
   TAKS_DEFINITION_FILE: ./task_definition.json
-  SERVICE_NAME: tenant_service
+  SERVICE_NAME: token_service
   CLUSTER_NAME: saas_serverless_cluster
   WORKING_DIR: backend
 
