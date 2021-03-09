@@ -1,4 +1,0 @@
-
-POST http://localhost:8080/tenant/TENANT0000000001
-Content-Type: application/json
-

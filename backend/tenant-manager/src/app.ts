@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { request } from 'express';
 import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
 import { getCredentialsFromToken } from './utils';
@@ -18,7 +18,7 @@ export const common = async (req: express.Request, res: express.Response, app: a
   } catch (err) {
     winston.error(err);
 
-    res.status(400).send(err);
+    res.status(400).send(err.message);
   }
 };
 
@@ -60,29 +60,41 @@ export const registTenant = async (
 export const getTenant = async (req: express.Request): Promise<Tenant.GetTenantResponse> => {
   winston.debug('Fetching tenant: ' + req.params.id);
 
-  const client = new DynamodbHelper();
+  // get credentials from token
+  const credentials = await getCredentialsFromToken(req);
+
+  const client = new DynamodbHelper({ credentials });
   const key: Tables.TenantKey = {
     id: req.params.id,
   };
 
-  const tenant = await client.get({
+  const tenant = await client.get<Tables.TenantItem>({
     TableName: Environments.TABLE_NAME_TENANT,
     Key: key,
   });
 
-  if (!tenant) {
+  if (!tenant || !tenant.Item) {
     throw new Error('Can not found tenant.');
   }
 
-  return (tenant?.Item as unknown) as Tenant.GetTenantResponse;
+  return {
+    accountName: tenant.Item.accountName,
+    companyName: tenant.Item.companyName,
+    ownerName: tenant.Item.ownerName,
+    userName: tenant.Item.userName,
+    email: tenant.Item.email,
+    tier: tenant.Item.tier,
+    status: tenant.Item.status,
+    userPoolId: tenant.Item.userPoolId,
+    identityPoolId: tenant.Item.identityPoolId,
+  };
 };
 
 /** update tenant */
 export const updateTanant = async (req: express.Request): Promise<Tenant.UpdateTenantResponse> => {
   winston.debug('Updating tenant: ' + req.body.id);
 
-  // TODO
-  const credentials = getCredentialsFromToken(req);
+  const credentials = await getCredentialsFromToken(req);
 
   const client = new DynamodbHelper({
     options: { credentials },
@@ -132,7 +144,7 @@ export const deleteTenant = async (req: express.Request): Promise<Tenant.DeleteT
   winston.debug('Deleting Tenant: ' + req.params.id);
 
   // get credentials from token
-  const credentials = getCredentialsFromToken(req);
+  const credentials = await getCredentialsFromToken(req);
   // init cilent
   const helper = new DynamodbHelper({ options: { credentials } });
 
@@ -146,4 +158,39 @@ export const deleteTenant = async (req: express.Request): Promise<Tenant.DeleteT
 
   // delete success
   return { status: 'success' };
+};
+
+/** get all tenants details */
+export const getAllTenants = async (
+  req: express.Request<any, any, Tenant.GetAllTenantRequest>
+): Promise<Tenant.GetAllTenantResponse> => {
+  const credentials = await getCredentialsFromToken(req);
+
+  const client = new DynamodbHelper({
+    credentials,
+  });
+
+  const results = await client.scan<Tables.TenantItem>({
+    TableName: Environments.TABLE_NAME_TENANT,
+    ProjectionExpression: 'id',
+  });
+
+  const response = results?.Items?.map<Tenant.GetTenantResponse>((item) => ({
+    accountName: item.accountName,
+    companyName: item.companyName,
+    ownerName: item.ownerName,
+    userName: item.userName,
+    email: item.email,
+    tier: item.tier,
+    status: item.status,
+    userPoolId: item.userPoolId,
+    identityPoolId: item.identityPoolId,
+  }));
+
+  // not found
+  if (!response) {
+    throw new Error('Tenant table scan failed.');
+  }
+
+  return response;
 };

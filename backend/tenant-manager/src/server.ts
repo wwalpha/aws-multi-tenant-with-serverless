@@ -16,11 +16,11 @@ app.use(urlencoded({ extended: false }));
 // health check
 app.get('/tenant/health', async (req, res) => await common(req, res, healthCheck));
 
-// Create REST entry points
-// app.get('/tenant/:id', async (req, res) => await common(req, res, getTenant));
-
 // create a tenant
 app.post('/tenant/:id', async (req, res) => await common(req, res, registTenant));
+
+// Create REST entry points
+app.get('/tenant/:id', async (req, res) => await common(req, res, getTenant));
 
 // update the tenant
 app.put('/tenant/:id', async (req, res) => await common(req, res, updateTanant));

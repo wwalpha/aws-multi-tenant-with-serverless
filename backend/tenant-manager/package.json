@@ -8,7 +8,8 @@
     "build": "tsc -p tsconfig.build.json",
     "prebuild:docker": "cp ../typings/* typings/ --recursive",
     "build:docker": "docker build -t saas/tenant .",
-    "test": "jest"
+    "test": "jest",
+    "debug": "nodemon"
   },
   "devDependencies": {
     "@jest/types": "^26.6.2",
@@ -26,6 +27,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.853.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "dynamodb-helper": "https://github.com/wwalpha/dynamodb-helper.git",
     "express": "^4.17.1",
