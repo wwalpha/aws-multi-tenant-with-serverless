@@ -3,16 +3,49 @@ export interface HealthCheck {
   isAlive: boolean;
 }
 
-export interface TenantAdminRegistRequest {
+export interface TenantUser {
+  /** tenant id */
   tenantId: string;
+  /** company name */
   companyName: string;
-  userName: string;
+  /** first name */
   firstName: string;
+  /** last name */
   lastName: string;
+  /** email */
+  email: string;
+  /** tier */
   tier: string;
 }
 
-export interface TenantAdminRegistResponse {
+/** Cognito User Details */
+export interface CognitoUser {
+  /** user name */
+  userName: string;
+  /** status */
+  enabled: boolean;
+  /** user status */
+  status: string;
+  /** user created date */
+  createDate?: Date;
+  /** first name */
+  firstName: string;
+  /** last name */
+  lastName: string;
+  /** user role */
+  role: string;
+  /** user tier */
+  tier: string;
+  /** user email */
+  email: string;
+}
+
+export interface CreateTenantAdminRequest extends TenantUser {
+  /** Tenant Id */
+  tenantId: string;
+}
+
+export interface CreateTenantAdminResponse {
   /** Tenant Id */
   tenantId: string;
   /** Cognito User Pool Id */
@@ -39,8 +72,8 @@ export interface TenantAdminRegistResponse {
 
 export interface CognitoInfos {
   UserPoolId: string;
-  ClientId: string;
-  IdentityPoolId: string;
+  ClientId?: string;
+  IdentityPoolId?: string;
 }
 
 export interface LookupUserRequest {}
@@ -51,14 +84,50 @@ export interface LookupUserResponse {
   /** user pool id */
   userPoolId?: string;
   /** user pool client id */
-  userPoolClientId?: string;
+  clientId?: string;
   /** identity pool id */
   identityPoolId?: string;
 }
 
+export interface CreateUserRequest extends TenantUser {}
+
+export interface CreateUserResponse extends TenantUser {
+  userName: string;
+}
+
 export interface GetUserRequest {}
 
-export interface GetUserResponse {}
+export interface GetUserResponse {
+  /** user name */
+  userName: string;
+  /** status */
+  enabled: boolean;
+  /** user status */
+  status: string;
+  /** first name */
+  firstName: string;
+  /** last name */
+  lastName: string;
+}
+
+export interface UpdateUserRequest {
+  /** user status */
+  status: string;
+  /** first name */
+  firstName: string;
+  /** last name */
+  lastName: string;
+}
+
+export interface UpdateUserResponse {
+  status: string;
+}
+
+export interface DeleteUserRequest {}
+
+export interface DeleteUserResponse {
+  status: string;
+}
 
 export interface DeleteTenantRequest {
   /** tenant id */
@@ -72,23 +141,4 @@ export interface DeleteTenantRequest {
 /**
  * Cognito User Details
  */
-export interface GetUsersResponse {
-  /** Username */
-  userName?: string;
-  /** User enabled */
-  enabled?: boolean;
-  /** User status */
-  confirmedStatus?: string;
-  /** User created date */
-  dateCreated?: Date;
-  /** User first name */
-  firstName?: string;
-  /** User last name */
-  lastName?: string;
-  /** Email */
-  email?: string;
-  /** Role */
-  role?: string;
-  /** Tier */
-  tier?: string;
-}
+export type GetUsersResponse = GetUserResponse[];

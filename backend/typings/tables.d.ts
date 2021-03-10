@@ -6,20 +6,8 @@ export interface UserKey {
 }
 
 export interface UserItem extends UserKey {
-  // cognito user pool id
-  userPoolId: string;
-  // cognito user pool client id
-  clientId: string;
-  // cognito identity pool id
-  identityPoolId: string;
-  // account name
-  accountName: string;
   // company name
   companyName: string;
-  // owner name
-  ownerName: string;
-  // user name
-  userName: string;
   // first name
   firstName: string;
   // last name
@@ -28,6 +16,12 @@ export interface UserItem extends UserKey {
   email: string;
   // tier
   tier: string;
+  // cognito user pool id
+  userPoolId: string;
+  // cognito user pool client id
+  clientId?: string;
+  // cognito identity pool id
+  identityPoolId?: string;
   // role
   role?: string;
   // sub
@@ -38,17 +32,30 @@ export interface TenantKey {
   id: string;
 }
 
-export interface TenantItem {
+export interface TenantItem extends TenantKey {
+  // owner name
   ownerName: string;
+  // company name
   companyName: string;
+  // first name
+  firstName: string;
+  // last name
+  lastName: string;
+  // email
+  email: string;
+  // status
   status: string;
+  // tier
   tier: string;
   // systemAdminPolicy: string;
   // systemAdminRole: string;
   // systemSupportPolicy: string;
   // systemSupportRole: string;
   // trustRole: string;
-  identityPoolId: string;
+  // user pool id
   userPoolId: string;
+  // client id
   clientId: string;
+  // identity pool id
+  identityPoolId: string;
 }

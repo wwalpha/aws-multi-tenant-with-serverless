@@ -1,16 +1,23 @@
+import { TenantItem } from './tables';
+
 export interface HealthCheck {
   service: string;
   isAlive: boolean;
 }
 
 /** create tenant request */
-export interface RegistTenantRequest {
+export interface CreateTenantRequest {
+  id: string;
   // owner name
   ownerName: string;
   // email
   email: string;
   // company name
   companyName: string;
+  // first name
+  firstName: string;
+  // last name
+  lastName: string;
   // tier
   tier: string;
   // cognito user pool id
@@ -22,7 +29,7 @@ export interface RegistTenantRequest {
 }
 
 /** create tenant response */
-export interface RegistTenantResponse {
+export interface CreateTenantResponse {
   status: string;
 }
 
@@ -47,9 +54,12 @@ export interface GetTenantResponse {
   identityPoolId: string;
 }
 
-export interface UpdateTenantRequest {}
+export interface UpdateTenantRequest {
+  companyName: string;
+  tier: string;
+}
 
-export interface UpdateTenantResponse {}
+export interface UpdateTenantResponse extends TenantItem {}
 
 export interface DeleteTenantRequest {}
 
