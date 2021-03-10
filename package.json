@@ -15,6 +15,12 @@
     "compose:down": "docker-compose -f 'mocks/docker-compose.yml' down",
     "compose:up": "docker-compose -f 'mocks/docker-compose.yml' up -d --build",
     "compose:restart": "yarn compose:down && yarn compose:up",
-    "clean": "docker image prune --force"
+    "clean": "docker image prune --force",
+    "act" :"act push --platform ubuntu-18.04=wwalpha/act-ubuntu:18.04 --secret-file .secrets -W .github/workflows/tenant.yml",
+    "check:all" :"yarn check:token && yarn check:tenant && yarn check:user && yarn check:tenantReg",
+    "check:token": "cd backend/token-manager && tsc --noemit",
+    "check:tenant": "cd backend/tenant-manager && tsc --noemit",
+    "check:user": "cd backend/user-manager && tsc --noemit",
+    "check:tenantReg": "cd backend/tenant-registry && tsc --noemit"
   }
 }
