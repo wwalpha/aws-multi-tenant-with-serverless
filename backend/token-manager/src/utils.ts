@@ -23,7 +23,7 @@ export const getLogger = () => logger;
  * @param username The username to lookup
  * @return params object with user pool and idToken
  */
-export const getUserPoolWithParams = async (token: string, userName: string): Promise<Token.CognitoDetails> => {
+export const getUserPoolWithParams = async (token: string, userName: string): Promise<User.LookupUserResponse> => {
   logger.debug('lookup user is exist in cognito user pool');
 
   const response = await axios.get<User.LookupUserResponse>(Endpoints.LOOKUP_USER(userName), {
@@ -37,16 +37,9 @@ export const getUserPoolWithParams = async (token: string, userName: string): Pr
     throw new Error('Lookup user failed.');
   }
 
-  const { userPoolId, userPoolClientId, identityPoolId } = response.data;
-
   logger.debug('lookup user success.');
 
-  // return result
-  return {
-    userPoolId,
-    userPoolClientId,
-    identityPoolId,
-  };
+  return response.data;
 };
 
 /**

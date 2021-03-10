@@ -6,7 +6,7 @@ const logger = getLogger();
 
 /** catch undefined errors */
 export const common = async (req: express.Request, res: express.Response, app: any) => {
-  logger.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info('request', req.body);
 
   try {
     const results = await app(req, res);
@@ -15,7 +15,7 @@ export const common = async (req: express.Request, res: express.Response, app: a
 
     res.status(200).send(results);
   } catch (err) {
-    logger.error(err);
+    logger.error('Unhandle error', err);
 
     res.status(400).send(err.message);
   }
@@ -30,7 +30,7 @@ export const healthCheck = async (): Promise<Token.HealthCheck> => ({ service: '
  * @param req A request
  * @returns The access credentials
  */
-export const getCredentialsFromToken = async (req: express.Request): Promise<Token.UserTokenResponse | undefined> => {
+export const getCredentialsFromToken = async (req: express.Request): Promise<Token.UserTokenResponse> => {
   logger.debug('get credentails from authorization token');
 
   const request = req.body as Token.UserTokenRequest;
