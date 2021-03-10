@@ -1,4 +1,5 @@
 import AWS, { CognitoIdentity, CognitoIdentityServiceProvider } from 'aws-sdk';
+import { defaultTo } from 'lodash';
 import express from 'express';
 import { DynamodbHelper } from 'dynamodb-helper';
 import { Environments } from './consts';
@@ -7,11 +8,12 @@ import {
   deleteRole,
   getCredentialsFromToken,
   getLogger,
-  getUserPoolIdFromRequest,
   lookupUserPoolData,
   provisionAdminUserWithRoles,
 } from './utils';
 import { User } from 'typings';
+import { getTenantIdFromToken, getUserPoolIdFromToken } from './token';
+import { deleteCognitoUser, getCognitoUser, listCognitoUsers, updateCognitoUser } from './cognito';
 
 // Init the winston log level
 const logger = getLogger();
@@ -24,7 +26,8 @@ AWS.config.update({
 
 /** catch undefined errors */
 export const common = async (req: express.Request, res: express.Response, app: any) => {
-  logger.info(`request: ${JSON.stringify(req.body)}`);
+  // logger.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info('request', req.body);
 
   try {
     const results = await app(req, res);
@@ -33,14 +36,16 @@ export const common = async (req: express.Request, res: express.Response, app: a
 
     res.status(200).send(results);
   } catch (err) {
-    logger.error(err);
+    logger.error('unhandled error', err);
 
-    res.status(400).send(err);
+    const message = defaultTo(err.message, err.response?.data);
+
+    res.status(400).send(message);
   }
 };
 
 /**
- * lookup user
+ * lookup user in cognito
  *
  * @param req request
  */
@@ -50,16 +55,78 @@ export const lookupUser = async (req: express.Request): Promise<User.LookupUserR
   // find user in user pool
   const user = await lookupUserPoolData(req.params.id, true);
 
-  if (!user) {
-    return { isExist: false };
-  }
-
+  // lookup user response
   return {
-    isExist: true,
-    identityPoolId: user.IdentityPoolId,
-    userPoolId: user.UserPoolId,
-    userPoolClientId: user.ClientId,
+    isExist: user !== undefined,
+    identityPoolId: user?.IdentityPoolId,
+    userPoolId: user?.UserPoolId,
+    clientId: user?.ClientId,
   };
+};
+
+/**
+ * Create a tenant admin user
+ *
+ * @param req request
+ * @returns
+ */
+export const createTenantAdmin = async (
+  req: express.Request<any, any, User.CreateTenantAdminRequest>
+): Promise<User.CreateTenantAdminResponse> => {
+  logger.debug('Creating a tenant admin user.');
+
+  const request = req.body;
+
+  // create cognito user pool and identity pool
+  const cognito = await provisionAdminUserWithRoles(request);
+  // create admin user
+  const userItem = await createNewUser(request, cognito, 'TENANT_ADMIN');
+
+  return userItem as User.CreateTenantAdminResponse;
+};
+
+/**
+ * Get all users in cognito
+ *
+ * @param req request
+ * @returns all users
+ */
+export const getUsers = async (req: express.Request): Promise<User.GetUsersResponse> => {
+  // get credentials
+  const credentials = await getCredentialsFromToken(req);
+  // user pool id
+  const userPoolId = getUserPoolIdFromToken(req);
+  // get cognito users
+  const users = await listCognitoUsers(userPoolId, credentials);
+
+  // return all items
+  return users.map<User.GetUserResponse>((item) => ({
+    userName: item.userName,
+    enabled: item.enabled,
+    status: item.status,
+    firstName: item.firstName,
+    lastName: item.lastName,
+  }));
+};
+
+/**
+ * Create a new user
+ *
+ * @param req request
+ * @returns created user details
+ */
+export const createUser = async (
+  req: express.Request<any, any, User.CreateUserRequest>
+): Promise<User.CreateUserResponse> => {
+  logger.debug(`Creating user: ${req.body.email}`);
+  // get user credentials
+  const credentials = await getCredentialsFromToken(req);
+  // get pool id
+  const userPoolId = getUserPoolIdFromToken(req);
+  // create new user
+  const userItem = await createNewUser(req.body, { UserPoolId: userPoolId }, 'TENANT_USER', credentials);
+
+  return { ...userItem, userName: userItem.email };
 };
 
 /**
@@ -71,47 +138,77 @@ export const lookupUser = async (req: express.Request): Promise<User.LookupUserR
 export const getUser = async (req: express.Request): Promise<User.GetUserResponse> => {
   logger.debug('Getting user id: ' + req.params.id);
 
-  // tokenManager.getCredentialsFromToken(req, function (credentials) {
-  //   // get the tenant id from the request
-  //   var tenantId = tokenManager.getTenantId(req);
+  const credentials = await getCredentialsFromToken(req);
+  const tenantId = getTenantIdFromToken(req);
 
-  //   lookupUserPoolData(credentials, req.params.id, tenantId, false, function (err, user) {
-  //     if (err) res.status(400).send('{"Error" : "Error getting user"}');
-  //     else {
-  //       cognitoUsers.getCognitoUser(credentials, user, function (err, user) {
-  //         if (err) {
-  //           res.status(400);
-  //           res.json('Error lookup user user: ' + req.params.id);
-  //         } else {
-  //           res.json(user);
-  //         }
-  //       });
-  //     }
-  //   });
-  // });
-  return {};
+  // check user exists
+  const cognito = await lookupUserPoolData(req.params.id, false, tenantId, credentials);
+
+  // error check
+  if (!cognito) throw new Error(`User not found: ${req.params.id}`);
+
+  const user = await getCognitoUser(cognito.UserPoolId, req.params.id, credentials);
+
+  return {
+    userName: user.userName,
+    enabled: defaultTo(user.enabled, false),
+    firstName: defaultTo(user.firstName, ''),
+    lastName: defaultTo(user.lastName, ''),
+    status: defaultTo(user.status, ''),
+  };
 };
 
 /**
- * Regist tenant admin user
+ * update user details
  *
  * @param req request
- * @returns
+ * @returns created user details
  */
-export const registTenantAdmin = async (
-  req: express.Request<any, any, User.TenantAdminRegistRequest>
-): Promise<User.TenantAdminRegistResponse> => {
-  logger.debug('Creating tenant admin user.');
+export const updateUser = async (
+  req: express.Request<any, any, User.UpdateUserRequest>
+): Promise<User.UpdateUserResponse> => {
+  // get user credentials
+  const credentials = await getCredentialsFromToken(req);
+  // tenant id
+  const tenantId = getTenantIdFromToken(req);
+  // check user exists
+  const cognito = await lookupUserPoolData(req.params.id, false, tenantId, credentials);
 
-  const request = req.body;
+  // error check
+  if (!cognito) throw new Error(`User not found: ${req.params.id}`);
 
-  // create cognito user pool and identity pool
-  const cognito = await provisionAdminUserWithRoles(request);
+  // update user details
+  await updateCognitoUser(cognito.UserPoolId, req.body, credentials);
 
-  // create admin user
-  const userItem = await createNewUser(request, cognito, 'TENANT_ADMIN');
+  return {
+    status: 'success',
+  };
+};
 
-  return userItem as User.TenantAdminRegistResponse;
+/**
+ * delete a cognito user
+ *
+ * @param req request
+ */
+export const deleteUser = async (req: express.Request): Promise<User.DeleteUserResponse> => {
+  const userName = req.params.id;
+
+  // get user credentials
+  const credentials = await getCredentialsFromToken(req);
+  // tenant id
+  const tenantId = getTenantIdFromToken(req);
+  // check user exists
+  const cognito = await lookupUserPoolData(req.params.id, false, tenantId, credentials);
+
+  // error check
+  if (!cognito) throw new Error(`User not found: ${req.params.id}`);
+
+  // delete user
+  await deleteCognitoUser(cognito.UserPoolId, userName, credentials);
+
+  return {
+    status: 'success',
+  };
 };
 
 /**
@@ -180,38 +277,6 @@ export const deleteTenant = async (req: express.Request<any, any, User.DeleteTen
     // remove user rows
     await helper.truncate(Environments.TABLE_NAME_USER, results.Items);
   }
-};
-
-/**
- * Get all users from cognito
- *
- * @param req request
- * @returns all users
- */
-export const getUsers = async (req: express.Request): Promise<User.GetUsersResponse[]> => {
-  // get credentials
-  const credentials = await getCredentialsFromToken(req);
-  // user pool id
-  const userPoolId = getUserPoolIdFromRequest(req);
-
-  // identity provider
-  const provider = new CognitoIdentityServiceProvider({ credentials });
-  // all users
-  const results = await provider.listUsers({ UserPoolId: userPoolId }).promise();
-  // create response
-  let users = results.Users?.map<User.GetUsersResponse>((u) => ({
-    userName: u.Username,
-    enabled: u.Enabled,
-    confirmedStatus: u.UserStatus,
-    dateCreated: u.UserCreateDate,
-    firstName: u.Attributes?.find((item) => item.Name === 'given_name')?.Value,
-    lastName: u.Attributes?.find((item) => item.Name === 'family_name')?.Value,
-    role: u.Attributes?.find((item) => item.Name === 'custom:role')?.Value,
-    tier: u.Attributes?.find((item) => item.Name === 'custom:tier')?.Value,
-    email: u.Attributes?.find((item) => item.Name === 'custom:email')?.Value,
-  }));
-
-  return (users ??= []);
 };
 
 // health check

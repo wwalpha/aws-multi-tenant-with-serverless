@@ -1,14 +1,16 @@
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
 import {
-  getUser,
-  healthCheck,
+  createTenantAdmin,
   lookupUser,
-  registTenantAdmin,
-  deleteTables,
+  getUsers,
+  createUser,
+  getUser,
+  updateUser,
+  deleteUser,
+  healthCheck,
   common,
   deleteTenant,
-  getUsers,
 } from './app';
 
 // instantiate application
@@ -22,25 +24,32 @@ app.use(urlencoded({ extended: false }));
 app.get('/user/health', async (req, res) => await common(req, res, healthCheck));
 
 // Provision a new tenant admin user
-app.post('/user/reg', async (req, res) => await common(req, res, registTenantAdmin));
+app.post('/user/admin', async (req, res) => await common(req, res, createTenantAdmin));
 
 // Lookup user pool for any user - no user data returned
 app.get('/user/pool/:id', async (req, res) => await common(req, res, lookupUser));
+
+// Get a list of users using a tenant id to scope the list
+app.get('/users', async (req, res) => await common(req, res, getUsers));
+
+// create a normal user
+app.post('/user', async (req, res) => await common(req, res, createUser));
+
+// get user details
+app.get('/user/:id', async (req, res) => await common(req, res, getUser));
+
+// update user details
+app.put('/user/:id', async (req, res) => await common(req, res, updateUser));
+
+// delete user
+app.delete('/user/:id', async (req, res) => await common(req, res, deleteUser));
 
 /**
  * WARNING: THIS WILL REMOVE ALL THE COGNITO USER POOLS, IDENTITY POOLS, ROLES,
  * AND POLICIES CREATED BY THIS QUICKSTART.
  * Delete Infrastructure Created by Multi-tenant Identity Reference Architecture
  */
-app.delete('/user/tenants', async (req, res) => await common(req, res, deleteTenant));
-
-/**
- * Get a list of users using a tenant id to scope the list
- */
-app.get('/users', async (req, res) => await common(req, res, getUsers));
-
-/** Get user attributes */
-// app.get('/user/:id', async (req, res) => await common(req, res, getUser));
+app.delete('/users/tenants', async (req, res) => await common(req, res, deleteTenant));
 
 // app.delete('/user/tables', deleteTables);
 

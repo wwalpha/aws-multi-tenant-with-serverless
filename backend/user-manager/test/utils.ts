@@ -1,6 +1,7 @@
+import Auth, { CognitoUser } from '@aws-amplify/auth';
 import { CognitoIdentity, CognitoIdentityServiceProvider, IAM } from 'aws-sdk';
 import { DynamodbHelper } from 'dynamodb-helper';
-import { Tables } from 'typings';
+import { Tables, User } from 'typings';
 import { Environments } from '../src/consts';
 
 export const initialize = async () => {
@@ -9,8 +10,43 @@ export const initialize = async () => {
   const users = require('./data/users.json');
   const tenants = require('./data/tenants.json');
 
+  await client.truncateAll(Environments.TABLE_NAME_USER);
+  await client.truncateAll(Environments.TABLE_NAME_TENANT);
+
   await client.bulk(Environments.TABLE_NAME_USER, users);
   await client.bulk(Environments.TABLE_NAME_TENANT, tenants);
+};
+
+export const initializeUserTest = async (
+  userPoolId: string,
+  clientId: string,
+  identityPoolId: string,
+  username: string,
+  password: string
+) => {
+  await initialize();
+
+  Auth.configure({
+    // REQUIRED only for Federated Authentication - Amazon Cognito Identity Pool ID
+    identityPoolId: identityPoolId,
+    // REQUIRED - Amazon Cognito Region
+    region: process.env.AWS_DEFAULT_REGION,
+    // OPTIONAL - Amazon Cognito User Pool ID
+    userPoolId: userPoolId,
+    // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+    userPoolWebClientId: clientId,
+  });
+
+  try {
+    const u = (await Auth.signIn({
+      username: username,
+      password: password,
+    })) as CognitoUser;
+
+    return u.getSignInUserSession()?.getAccessToken().getJwtToken();
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 export const clean = async (tenantId: string, userId: string) => {

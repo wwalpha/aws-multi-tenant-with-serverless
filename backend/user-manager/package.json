@@ -17,6 +17,7 @@
     "dynamodb-helper": "https://github.com/wwalpha/dynamodb-helper.git",
     "express": "^4.17.1",
     "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
     "winston": "^3.3.3"
   },
   "devDependencies": {
@@ -24,6 +25,7 @@
     "@jest/types": "^26.6.2",
     "@types/express": "^4.17.11",
     "@types/jest": "^26.0.20",
+    "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.31",
     "@types/supertest": "^2.0.10",
     "@types/uuid": "^8.3.0",
