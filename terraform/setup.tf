@@ -43,3 +43,51 @@ resource "null_resource" "lambda_build" {
     }
   }
 }
+
+# ----------------------------------------------------------------------------------------------
+# ECR - Tenant
+# ----------------------------------------------------------------------------------------------
+resource "aws_ecr_repository" "tenant" {
+  name                 = "saas/tenant"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# ECR - Tenant Registry
+# ----------------------------------------------------------------------------------------------
+resource "aws_ecr_repository" "tenant_reg" {
+  name                 = "saas/tenant_reg"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# ECR - Token
+# ----------------------------------------------------------------------------------------------
+resource "aws_ecr_repository" "token" {
+  name                 = "saas/token"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# ECR - User
+# ----------------------------------------------------------------------------------------------
+resource "aws_ecr_repository" "user" {
+  name                 = "saas/user"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}

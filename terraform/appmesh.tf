@@ -11,119 +11,192 @@ resource "aws_appmesh_mesh" "saas" {
   }
 }
 
-# # ----------------------------------------------------------------------------------------------
-# # App Mesh - Auth Virtual Node
-# # ----------------------------------------------------------------------------------------------
-# resource "aws_appmesh_virtual_node" "endpoint" {
-#   name      = "auth_node"
-#   mesh_name = aws_appmesh_mesh.saas.id
+# ----------------------------------------------------------------------------------------------
+# App Mesh - Token Virtual Service
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_service" "token" {
+  name      = "${aws_service_discovery_service.token.name}.${aws_service_discovery_private_dns_namespace.saas.name}"
+  mesh_name = aws_appmesh_mesh.saas.id
 
-#   spec {
-#     listener {
-#       port_mapping {
-#         port     = 8090
-#         protocol = "http"
-#       }
-#     }
+  spec {
+    provider {
+      virtual_node {
+        virtual_node_name = aws_appmesh_virtual_node.token.name
+      }
+    }
+  }
+}
 
-#     service_discovery {
-#       aws_cloud_map {
-#         service_name   = aws_service_discovery_service.backend_auth.name
-#         namespace_name = aws_service_discovery_private_dns_namespace.microservice.name
-#       }
-#     }
-#   }
-# }
+# ----------------------------------------------------------------------------------------------
+# App Mesh - Token Virtual Node
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_node" "token" {
+  name      = "token_node"
+  mesh_name = aws_appmesh_mesh.saas.id
 
-# # ----------------------------------------------------------------------------------------------
-# # App Mesh - Auth Virtual Service
-# # ----------------------------------------------------------------------------------------------
-# resource "aws_appmesh_virtual_service" "auth" {
-#   name      = "${aws_service_discovery_service.backend_auth.name}.${aws_service_discovery_private_dns_namespace.microservice.name}"
-#   mesh_name = aws_appmesh_mesh.microservice.id
+  spec {
+    backend {
+      virtual_service {
+        virtual_service_name = aws_appmesh_virtual_service.user.name
+      }
+    }
 
-#   spec {
-#     provider {
-#       virtual_node {
-#         virtual_node_name = aws_appmesh_virtual_node.auth.name
-#       }
-#     }
-#   }
-# }
+    listener {
+      port_mapping {
+        port     = 80
+        protocol = "http"
+      }
+    }
 
-# # ----------------------------------------------------------------------------------------------
-# # App Mesh - Worker Virtual Node
-# # ----------------------------------------------------------------------------------------------
-# resource "aws_appmesh_virtual_node" "worker" {
-#   name      = "worker_node"
-#   mesh_name = aws_appmesh_mesh.microservice.id
+    service_discovery {
+      aws_cloud_map {
+        service_name   = aws_service_discovery_service.token.name
+        namespace_name = aws_service_discovery_private_dns_namespace.saas.name
+      }
+    }
+  }
+}
 
-#   spec {
-#     listener {
-#       port_mapping {
-#         port     = 8090
-#         protocol = "http"
-#       }
-#     }
+# ----------------------------------------------------------------------------------------------
+# App Mesh - Tenant Virtual Service
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_service" "tenant" {
+  name      = "${aws_service_discovery_service.tenant.name}.${aws_service_discovery_private_dns_namespace.saas.name}"
+  mesh_name = aws_appmesh_mesh.saas.id
 
-#     service_discovery {
-#       aws_cloud_map {
-#         service_name   = aws_service_discovery_service.backend_worker.name
-#         namespace_name = aws_service_discovery_private_dns_namespace.microservice.name
-#       }
-#     }
-#   }
-# }
+  spec {
+    provider {
+      virtual_node {
+        virtual_node_name = aws_appmesh_virtual_node.tenant.name
+      }
+    }
+  }
+}
 
-# # ----------------------------------------------------------------------------------------------
-# # App Mesh - Worker Virtual Service
-# # ----------------------------------------------------------------------------------------------
-# resource "aws_appmesh_virtual_service" "worker" {
-#   name      = "${aws_service_discovery_service.backend_worker.name}.${aws_service_discovery_private_dns_namespace.microservice.name}"
-#   mesh_name = aws_appmesh_mesh.microservice.id
+# ----------------------------------------------------------------------------------------------
+# App Mesh - API Virtual Node
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_node" "tenant" {
+  name      = "tenant_node"
+  mesh_name = aws_appmesh_mesh.saas.id
 
-#   spec {
-#     provider {
-#       virtual_node {
-#         virtual_node_name = aws_appmesh_virtual_node.worker.name
-#       }
-#     }
-#   }
-# }
+  spec {
+    backend {
+      virtual_service {
+        virtual_service_name = aws_appmesh_virtual_service.user.name
+      }
+    }
 
+    backend {
+      virtual_service {
+        virtual_service_name = aws_appmesh_virtual_service.token.name
+      }
+    }
 
-# # ----------------------------------------------------------------------------------------------
-# # App Mesh - API Virtual Node
-# # ----------------------------------------------------------------------------------------------
-# resource "aws_appmesh_virtual_node" "api" {
-#   name      = "api_node"
-#   mesh_name = aws_appmesh_mesh.microservice.id
+    listener {
+      port_mapping {
+        port     = 8080
+        protocol = "http"
+      }
+    }
 
-#   spec {
-#     backend {
-#       virtual_service {
-#         virtual_service_name = aws_appmesh_virtual_service.auth.name
-#       }
-#     }
+    service_discovery {
+      aws_cloud_map {
+        service_name   = aws_service_discovery_service.tenant.name
+        namespace_name = aws_service_discovery_private_dns_namespace.saas.name
+      }
+    }
+  }
+}
 
-#     backend {
-#       virtual_service {
-#         virtual_service_name = aws_appmesh_virtual_service.worker.name
-#       }
-#     }
+# ----------------------------------------------------------------------------------------------
+# App Mesh - Tenant Registry Virtual Service
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_service" "tenant_reg" {
+  name      = "${aws_service_discovery_service.tenant_reg.name}.${aws_service_discovery_private_dns_namespace.saas.name}"
+  mesh_name = aws_appmesh_mesh.saas.id
 
-#     listener {
-#       port_mapping {
-#         port     = 8080
-#         protocol = "http"
-#       }
-#     }
+  spec {
+    provider {
+      virtual_node {
+        virtual_node_name = aws_appmesh_virtual_node.tenant_reg.name
+      }
+    }
+  }
+}
 
-#     service_discovery {
-#       aws_cloud_map {
-#         service_name   = aws_service_discovery_service.backend_api.name
-#         namespace_name = aws_service_discovery_private_dns_namespace.microservice.name
-#       }
-#     }
-#   }
-# }
+# ----------------------------------------------------------------------------------------------
+# App Mesh - Tenant Registry Virtual Node
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_node" "tenant_reg" {
+  name      = "tenant_reg_node"
+  mesh_name = aws_appmesh_mesh.saas.id
+
+  spec {
+    backend {
+      virtual_service {
+        virtual_service_name = aws_appmesh_virtual_service.tenant.name
+      }
+    }
+
+    listener {
+      port_mapping {
+        port     = 8080
+        protocol = "http"
+      }
+    }
+
+    service_discovery {
+      aws_cloud_map {
+        service_name   = aws_service_discovery_service.tenant_reg.name
+        namespace_name = aws_service_discovery_private_dns_namespace.saas.name
+      }
+    }
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# App Mesh - User Virtual Service
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_service" "user" {
+  name      = "${aws_service_discovery_service.user.name}.${aws_service_discovery_private_dns_namespace.saas.name}"
+  mesh_name = aws_appmesh_mesh.saas.id
+
+  spec {
+    provider {
+      virtual_node {
+        virtual_node_name = aws_appmesh_virtual_node.user.name
+      }
+    }
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# App Mesh - User Service Virtual Node
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_node" "user" {
+  name      = "user_node"
+  mesh_name = aws_appmesh_mesh.saas.id
+
+  spec {
+    # backend {
+    #   virtual_service {
+    #     virtual_service_name = aws_appmesh_virtual_service.token.name
+    #   }
+    # }
+
+    listener {
+      port_mapping {
+        port     = 8080
+        protocol = "http"
+      }
+    }
+
+    service_discovery {
+      aws_cloud_map {
+        service_name   = aws_service_discovery_service.tenant.name
+        namespace_name = aws_service_discovery_private_dns_namespace.saas.name
+      }
+    }
+  }
+}
