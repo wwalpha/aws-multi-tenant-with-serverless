@@ -8,6 +8,8 @@ export interface TenantUser {
   tenantId: string;
   /** company name */
   companyName: string;
+  /** username */
+  username: string;
   /** first name */
   firstName: string;
   /** last name */
@@ -40,12 +42,9 @@ export interface CognitoUser {
   email: string;
 }
 
-export interface CreateTenantAdminRequest extends TenantUser {
-  /** Tenant Id */
-  tenantId: string;
-}
+export interface CreateAdminRequest extends TenantUser {}
 
-export interface CreateTenantAdminResponse {
+export interface CreateAdminResponse {
   /** Tenant Id */
   tenantId: string;
   /** Cognito User Pool Id */
@@ -58,6 +57,8 @@ export interface CreateTenantAdminResponse {
   id: string;
   /** email */
   email: string;
+  /** company name */
+  companyName: string;
   /** first name */
   firstName: string;
   /** last name */
@@ -74,6 +75,12 @@ export interface CognitoInfos {
   UserPoolId: string;
   ClientId?: string;
   IdentityPoolId?: string;
+}
+
+export interface TenantInfos extends CognitoInfos {
+  AuthRoleArn: string;
+  AdminRoleArn: string;
+  UserRoleArn: string;
 }
 
 export interface LookupUserRequest {}

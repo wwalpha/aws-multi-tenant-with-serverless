@@ -3,5 +3,6 @@ import * as Token from './token';
 import * as Tenant from './tenant';
 import * as User from './user';
 import * as TenantReg from './tenantReg';
+import * as SystemReg from './systemReg';
 
-export { Tables, Token, Tenant, TenantReg, User };
+export { Tables, Token, Tenant, TenantReg, User, SystemReg };
