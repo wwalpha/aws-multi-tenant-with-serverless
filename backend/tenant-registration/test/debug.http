@@ -1,0 +1,12 @@
+GET http://127.0.0.1:8080/reg/health
+
+POST http://127.0.0.1:8080/reg
+Content-Type: application/json
+
+{
+  "email": "wwalpha@gmail.com",
+  "companyName":"dxc",
+  "firstName":"first001",
+  "lastName":"last001",
+  "tier":"Standard"
+}
