@@ -1,22 +1,14 @@
 import express from 'express';
-import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
-import { getCredentialsFromToken } from './utils';
+import { getCredentialsFromToken, getLogger } from './utils';
 import { Tenant, Tables } from 'typings';
 import { Environments } from './consts';
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  defaultMeta: {
-    service: 'tenant-service',
-  },
-  transports: [new winston.transports.Console({ level: 'debug' })],
-});
+const logger = getLogger();
 
 /** catch undefined errors */
 export const common = async (req: express.Request, res: express.Response, app: any) => {
-  logger.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info('request', req.body);
 
   try {
     const results = await app(req, res);
@@ -25,9 +17,11 @@ export const common = async (req: express.Request, res: express.Response, app: a
 
     res.status(200).send(results);
   } catch (err) {
-    winston.error(err);
+    logger.error('unhandle error', err);
 
-    res.status(400).send(err.message);
+    const message = defaultTo(err.message, err.response?.data);
+
+    res.status(400).send(message);
   }
 };
 
@@ -35,18 +29,15 @@ export const common = async (req: express.Request, res: express.Response, app: a
 export const healthCheck = async () => ({ service: 'Tenant Manager', isAlive: true });
 
 /** create a tenant */
-export const registTenant = async (
-  req: express.Request<any, any, Tenant.RegistTenantRequest>
-): Promise<Tenant.RegistTenantResponse> => {
-  const tenantId = req.params.id;
+export const createTenant = async (
+  req: express.Request<any, any, Tenant.CreateTenantRequest>
+): Promise<Tenant.CreateTenantResponse> => {
   const request = req.body;
 
-  logger.debug(`Creating Tenant: ${tenantId}`);
+  logger.debug(`Creating Tenant: ${request.id}`);
 
   const client = new DynamodbHelper();
   const item: Tables.TenantItem = {
-    // @ts-ignore
-    id: tenantId,
     status: 'Active',
     ...request,
   };
@@ -57,7 +48,7 @@ export const registTenant = async (
     Item: item,
   });
 
-  logger.debug(`Tenant ${tenantId} created`);
+  logger.debug(`Tenant ${request.id} created`);
 
   return {
     status: 'success',
@@ -66,7 +57,7 @@ export const registTenant = async (
 
 /** get tenant attributes */
 export const getTenant = async (req: express.Request): Promise<Tenant.GetTenantResponse> => {
-  winston.debug('Fetching tenant: ' + req.params.id);
+  logger.debug('Fetching tenant: ' + req.params.id);
 
   // get credentials from token
   const credentials = await getCredentialsFromToken(req);
@@ -98,39 +89,28 @@ export const getTenant = async (req: express.Request): Promise<Tenant.GetTenantR
 };
 
 /** update tenant */
-export const updateTanant = async (req: express.Request): Promise<Tenant.UpdateTenantResponse> => {
-  winston.debug('Updating tenant: ' + req.body.id);
+export const updateTanant = async (
+  req: express.Request<any, any, Tenant.UpdateTenantRequest>
+): Promise<Tenant.UpdateTenantResponse> => {
+  logger.debug('Updating tenant: ' + req.params.id);
 
+  // get
   const credentials = await getCredentialsFromToken(req);
 
   const client = new DynamodbHelper({
     options: { credentials },
   });
 
-  const keyParams = {
-    id: req.body.id,
-  };
-
   // tenant update
   const tenant = await client.update({
     TableName: Environments.TABLE_NAME_TENANT,
-    Key: keyParams,
-    UpdateExpression:
-      'set ' +
-      'companyName=:companyName, ' +
-      'accountName=:accountName, ' +
-      'ownerName=:ownerName, ' +
-      'tier=:tier, ' +
-      '#status=:status',
-    ExpressionAttributeNames: {
-      '#status': 'status',
-    },
+    Key: {
+      id: req.params.id,
+    } as Tables.TenantKey,
+    UpdateExpression: 'set companyName=:companyName, tier=:tier, ',
     ExpressionAttributeValues: {
       ':companyName': req.body.companyName,
-      ':accountName': req.body.accountName,
-      ':ownerName': req.body.ownerName,
       ':tier': req.body.tier,
-      ':status': req.body.status,
     },
     ReturnValues: 'UPDATED_NEW',
   });
@@ -140,7 +120,7 @@ export const updateTanant = async (req: express.Request): Promise<Tenant.UpdateT
     throw new Error('Update tenant failed.');
   }
 
-  winston.debug('Tenant ' + req.body.title + ' updated');
+  logger.debug('Tenant updated');
 
   // return updated item
   return tenant.Attributes as Tables.TenantItem;
@@ -148,7 +128,7 @@ export const updateTanant = async (req: express.Request): Promise<Tenant.UpdateT
 
 /** delete tenant */
 export const deleteTenant = async (req: express.Request): Promise<Tenant.DeleteTenantResponse> => {
-  winston.debug('Deleting Tenant: ' + req.params.id);
+  logger.debug('Deleting Tenant: ' + req.params.id);
 
   // get credentials from token
   const credentials = await getCredentialsFromToken(req);
@@ -200,3 +180,6 @@ export const getAllTenants = async (
 
   return response;
 };
+function defaultTo(message: any, data: any) {
+  throw new Error('Function not implemented.');
+}

@@ -1,18 +1,20 @@
 
 GET http://localhost:8080/tenant/health
 
-POST http://localhost:8080/tenant/TENANT000003
+POST http://localhost:8080/tenant
 Content-Type: application/json
 
 {
-  "userPoolId": "us-west-2_DoZUpCRPZ",
-  "identityPoolId": "us-west-2:44e56880-94cf-48b4-8fae-2d730d345e51",
-  "ownerName": "test001",
-  "accountName": "111111",
-  "userName": "test001@dxc.com",
-  "email":"test@dxc.com",
-  "companyName": "DXC",
-  "tier": "Standard Tier"
+  "id": "TENANT000003",
+  "email": "test@test.com",
+  "companyName": "company001",
+  "ownerName": "test@test.com",
+  "tier": "Standard",
+  "userPoolId": "user_pool_id",
+  "clientId": "client_id",
+  "identityPoolId": "identity_pool_id",
+  "firstName": "first001",
+  "lastName": "last001",
 }
 
 GET http://localhost:8080/tenant/TENANT000002

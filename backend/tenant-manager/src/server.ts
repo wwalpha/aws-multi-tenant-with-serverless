@@ -1,10 +1,6 @@
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
-import winston from 'winston';
-import { common, deleteTenant, getTenant, healthCheck, registTenant, updateTanant } from './app';
-
-// Configure Logging
-winston.add(new winston.transports.Console({ level: 'debug' }));
+import { common, deleteTenant, getTenant, healthCheck, createTenant, updateTanant } from './app';
 
 // Instantiate application
 const app = express();
@@ -17,7 +13,7 @@ app.use(urlencoded({ extended: false }));
 app.get('/tenant/health', async (req, res) => await common(req, res, healthCheck));
 
 // create a tenant
-app.post('/tenant/:id', async (req, res) => await common(req, res, registTenant));
+app.post('/tenant', async (req, res) => await common(req, res, createTenant));
 
 // Create REST entry points
 app.get('/tenant/:id', async (req, res) => await common(req, res, getTenant));
