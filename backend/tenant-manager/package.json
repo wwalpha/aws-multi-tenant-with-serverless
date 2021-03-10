@@ -7,7 +7,7 @@
     "start": "node index.js",
     "build": "tsc -p tsconfig.build.json",
     "build:docker": "cd .. && docker build --build-arg TARGET_FOLDER=tenant-manager -t saas/tenant -f ./tenant-manager/Dockerfile .",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "debug": "nodemon"
   },
   "devDependencies": {

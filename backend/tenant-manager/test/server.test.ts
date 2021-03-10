@@ -6,6 +6,8 @@ import { Tables, Tenant } from 'typings';
 
 describe('tenant manager', () => {
   const tenantId = 'TENANT1234567890';
+  const jwtToken =
+    'eyJraWQiOiJBMkNISnVCTTM2cDFMeDVcL28zM2NTY3JzTE1pUGRUOFlYVVFxTDRYblpcL0U9IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIyNzU5MjQ5Yi05OGM0LTRhNDAtOWI5NC1hOTI0NTZjMzY1YjgiLCJjdXN0b206dGllciI6IlN0YW5kYXJkIiwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLW5vcnRoZWFzdC0yLmFtYXpvbmF3cy5jb21cL2FwLW5vcnRoZWFzdC0yX0pNbDh0MEtPcCIsImNvZ25pdG86dXNlcm5hbWUiOiJ3d2FscGhhQGdtYWlsLmNvbSIsImN1c3RvbTp0ZW5hbnRfaWQiOiJURU5BTlRlN2RjODMwMjM1NTQ0NjczOTM2Yjg1NDZiYTUwODJiMyIsImdpdmVuX25hbWUiOiJmaXJzdDAwMSIsImF1ZCI6IjVyZjk0b3Rkb3NncXIxbHBhcHRmYTZmbmdpIiwiZXZlbnRfaWQiOiIzYmZhNTRjYy0zY2RjLTQxZmUtOTBlYi01MDg4ODc0NDBkNmQiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTYxNTM2MjI4OCwiZXhwIjoxNjE1MzY1ODg4LCJjdXN0b206cm9sZSI6IlRFTkFOVF9BRE1JTiIsImlhdCI6MTYxNTM2MjI4OCwiZmFtaWx5X25hbWUiOiJsYXN0MDAxIiwiZW1haWwiOiJ3d2FscGhhQGdtYWlsLmNvbSJ9.MWAnO97Zsa1ZB4hRLe40tVw5KmN2zJO-RT0nnUrnP70hizeGnEp0S8r5_jwMn8Wbl-I2BeW0ynbyCowZiIsQ2uUg6YpNQYjflBP4OngWWFY9hkJJwzt0Xk0T4lTiMuiNxBVewmkR-zv_EU1oJzRBVANbo8rkq1T_EWRGFvAC_lSHq8oloBU_dEw3V46UW3qGh51dekchdi4teBGpZdYAWHBSoE0_6nLXOUwJ36TOPkEeY1-2TosTuP9UGbG12so3yrz_6XPuE8eAxNR8M_NYcgM2zoWEc9yhqL-ZqIke30-d_WUI3Nlfg6X53jaD_Mie4xddrFalcZu03cQrzbDERQ';
 
   it('health check', async () => {
     const res = await request(server).get('/tenant/health');
@@ -62,16 +64,10 @@ describe('tenant manager', () => {
   });
 
   it('get tenant details', async () => {
-    const send: Tenant.GetTenantRequest = {};
-
     const res = await request(server)
       .get(`/tenant/${tenantId}`)
-      .send(send)
       .set('Content-Type', 'application/json')
-      .set(
-        'Authorization',
-        'Bearer eyJraWQiOiJiaTlyVyt6UTBhZ0E3b2VvUjhcLzY4am1FUDFURm1XUWo1SVVqcDM2WVphZz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJjN2MyYmY1Ny0yYzg1LTQ1NWYtODQzYS01ZmQ1NmE1YzM3ZDQiLCJldmVudF9pZCI6IjFlNzQ0ZmNiLWQ2NzktNDlmZi1iNDA2LTU5ODNiNmQwMTJhMCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2MTUzNDk4NzMsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMl8xRkZQVnIyY1YiLCJleHAiOjE2MTUzNTM0NzMsImlhdCI6MTYxNTM0OTg3MywianRpIjoiNmIyNmIyMWEtOWM1NS00NzMxLTkzZjktMjc2MmUyODcyNDlmIiwiY2xpZW50X2lkIjoiNWJxdDYzcWR1azIzaW5zYzdzOWxnanZzZW0iLCJ1c2VybmFtZSI6Ind3YWxwaGFAZ21haWwuY29tIn0.AHgAiCl9aa2CLTRpSdb3EsCBTWVcWcIaLA2kyeI-RRjE_rhs2tv7FDII-p0OUh48YX9eSgZ2-9fFCijFYp1bqwMkaubWl8zIGrw0Pk5ZXYBF2hMdnmIK2EJyq9AUYddjggPiikOUGFyDast876IXUfgkrwf5TKRouHaGs2CXe32BOYCg7gPalurOb_74KIS8LWMKkSceQxgCKGE9yN5tg1cq-fCyMfA-HJSzTv5cghxQ2jGEz1Dbikyz6E2FAngA-93-rN4MkxlUWIDI17mJSxyrSB1kPIFvYSXPojXb74RVYYfnd1ICWe5_i1AcEDTs3qviRHmNfwGkyFw_fv6uSQ'
-      );
+      .set('Authorization', `Bearer ${jwtToken}`);
 
     expect(res.status).toBe(200);
 
@@ -93,7 +89,7 @@ describe('tenant manager', () => {
   });
 
   // update tenant
-  it('update tenant details', async () => {
+  it.skip('update tenant details', async () => {
     const send: Tenant.UpdateTenantRequest = {
       companyName: 'test111',
       tier: 'Basic',
@@ -103,10 +99,7 @@ describe('tenant manager', () => {
       .put(`/tenant/${tenantId}`)
       .send(send)
       .set('Content-Type', 'application/json')
-      .set(
-        'Authorization',
-        'Bearer eyJraWQiOiJiaTlyVyt6UTBhZ0E3b2VvUjhcLzY4am1FUDFURm1XUWo1SVVqcDM2WVphZz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJjN2MyYmY1Ny0yYzg1LTQ1NWYtODQzYS01ZmQ1NmE1YzM3ZDQiLCJldmVudF9pZCI6IjFlNzQ0ZmNiLWQ2NzktNDlmZi1iNDA2LTU5ODNiNmQwMTJhMCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2MTUzNDk4NzMsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMl8xRkZQVnIyY1YiLCJleHAiOjE2MTUzNTM0NzMsImlhdCI6MTYxNTM0OTg3MywianRpIjoiNmIyNmIyMWEtOWM1NS00NzMxLTkzZjktMjc2MmUyODcyNDlmIiwiY2xpZW50X2lkIjoiNWJxdDYzcWR1azIzaW5zYzdzOWxnanZzZW0iLCJ1c2VybmFtZSI6Ind3YWxwaGFAZ21haWwuY29tIn0.AHgAiCl9aa2CLTRpSdb3EsCBTWVcWcIaLA2kyeI-RRjE_rhs2tv7FDII-p0OUh48YX9eSgZ2-9fFCijFYp1bqwMkaubWl8zIGrw0Pk5ZXYBF2hMdnmIK2EJyq9AUYddjggPiikOUGFyDast876IXUfgkrwf5TKRouHaGs2CXe32BOYCg7gPalurOb_74KIS8LWMKkSceQxgCKGE9yN5tg1cq-fCyMfA-HJSzTv5cghxQ2jGEz1Dbikyz6E2FAngA-93-rN4MkxlUWIDI17mJSxyrSB1kPIFvYSXPojXb74RVYYfnd1ICWe5_i1AcEDTs3qviRHmNfwGkyFw_fv6uSQ'
-      );
+      .set('Authorization', `Bearer ${jwtToken}`);
 
     // error
     expect(res.status).toBe(200);
@@ -129,15 +122,8 @@ describe('tenant manager', () => {
   });
 
   // delete tenant
-  it('delete tenant', async () => {
-    const res = await request(server)
-      .delete(`/tenant/${tenantId}`)
-      .send(require('./datas/A003.Request.json'))
-      .set('Content-Type', 'application/json')
-      .set(
-        'Authorization',
-        'Bearer eyJraWQiOiJiaTlyVyt6UTBhZ0E3b2VvUjhcLzY4am1FUDFURm1XUWo1SVVqcDM2WVphZz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJjN2MyYmY1Ny0yYzg1LTQ1NWYtODQzYS01ZmQ1NmE1YzM3ZDQiLCJldmVudF9pZCI6IjFlNzQ0ZmNiLWQ2NzktNDlmZi1iNDA2LTU5ODNiNmQwMTJhMCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2MTUzNDk4NzMsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMl8xRkZQVnIyY1YiLCJleHAiOjE2MTUzNTM0NzMsImlhdCI6MTYxNTM0OTg3MywianRpIjoiNmIyNmIyMWEtOWM1NS00NzMxLTkzZjktMjc2MmUyODcyNDlmIiwiY2xpZW50X2lkIjoiNWJxdDYzcWR1azIzaW5zYzdzOWxnanZzZW0iLCJ1c2VybmFtZSI6Ind3YWxwaGFAZ21haWwuY29tIn0.AHgAiCl9aa2CLTRpSdb3EsCBTWVcWcIaLA2kyeI-RRjE_rhs2tv7FDII-p0OUh48YX9eSgZ2-9fFCijFYp1bqwMkaubWl8zIGrw0Pk5ZXYBF2hMdnmIK2EJyq9AUYddjggPiikOUGFyDast876IXUfgkrwf5TKRouHaGs2CXe32BOYCg7gPalurOb_74KIS8LWMKkSceQxgCKGE9yN5tg1cq-fCyMfA-HJSzTv5cghxQ2jGEz1Dbikyz6E2FAngA-93-rN4MkxlUWIDI17mJSxyrSB1kPIFvYSXPojXb74RVYYfnd1ICWe5_i1AcEDTs3qviRHmNfwGkyFw_fv6uSQ'
-      );
+  it.skip('delete tenant', async () => {
+    const res = await request(server).delete(`/tenant/${tenantId}`).set('Authorization', `Bearer ${jwtToken}`);
 
     expect(res.body).toMatchObject({ status: 'success' });
 
