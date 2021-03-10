@@ -9,9 +9,10 @@ import {
   updateUser,
   deleteUser,
   healthCheck,
-  common,
   deleteTenant,
+  createSystemAdmin,
 } from './app';
+import { common } from './utils';
 
 // instantiate application
 var app = express();
@@ -25,6 +26,9 @@ app.get('/user/health', async (req, res) => await common(req, res, healthCheck))
 
 // Provision a new tenant admin user
 app.post('/user/admin', async (req, res) => await common(req, res, createTenantAdmin));
+
+// Provision a new tenant admin user
+app.post('/user/system', async (req, res) => await common(req, res, createSystemAdmin));
 
 // Lookup user pool for any user - no user data returned
 app.get('/user/pool/:id', async (req, res) => await common(req, res, lookupUser));

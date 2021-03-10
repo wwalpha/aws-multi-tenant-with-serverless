@@ -3,7 +3,14 @@ import express from 'express';
 import axios from 'axios';
 import winston from 'winston';
 import { DynamodbHelper } from 'dynamodb-helper';
-import { ADMIN_POLICY, COGNITO_PRINCIPALS, Environments, USER_POLICY } from './consts';
+import {
+  TENANT_ADMIN_POLICY,
+  COGNITO_PRINCIPALS,
+  Environments,
+  TENANT_USER_POLICY,
+  SYSTEM_ADMIN_POLICY,
+  SYSTEM_USER_POLICY,
+} from './consts';
 import {
   createCognitoUser,
   createIdentiyPool,
@@ -12,6 +19,7 @@ import {
   setIdentityPoolRoles,
 } from './cognito';
 import { Tables, Token, User } from 'typings';
+import { defaultTo } from 'lodash';
 
 // update aws config
 AWS.config.update({
@@ -30,14 +38,32 @@ const logger = winston.createLogger({
 
 export const getLogger = () => logger;
 
+/** catch undefined errors */
+export const common = async (req: express.Request, res: express.Response, app: any) => {
+  // logger.info(`request: ${JSON.stringify(req.body)}`);
+  logger.info('request', req.body);
+
+  try {
+    const results = await app(req, res);
+
+    logger.info('response', results);
+
+    res.status(200).send(results);
+  } catch (err) {
+    logger.error('unhandled error', err);
+
+    const message = defaultTo(err.message, err.response?.data);
+
+    res.status(400).send(message);
+  }
+};
+
 /**
  * provision cognito and admin user by system credentials
  *
  * @param request
  */
-export const provisionAdminUserWithRoles = async (
-  request: User.CreateTenantAdminRequest
-): Promise<User.CognitoInfos> => {
+export const provisionAdminUserWithRoles = async (request: User.CreateAdminRequest): Promise<User.TenantInfos> => {
   logger.debug('Provision admin user with roles.');
 
   // create user pool
@@ -57,20 +83,80 @@ export const provisionAdminUserWithRoles = async (
   // identity pool id
   const identityPoolId = identityPool.IdentityPoolId;
 
+  const roles = await Promise.all([
+    await createAuthRole(request.tenantId, identityPool.IdentityPoolId),
+    await createTenantAdminRole(request.tenantId, identityPool.IdentityPoolId),
+    await createTenantUserRole(request.tenantId, identityPool.IdentityPoolId),
+  ]);
   // auth role
-  const authRole = await createAuthRole(request.tenantId, identityPool.IdentityPoolId);
+  const authRole = roles[0];
   // admin user role
-  const adminRole = await createAdminRole(request.tenantId, identityPool.IdentityPoolId, userPool.Arn);
+  const adminRole = roles[1];
   // normal user role
-  const userRole = await createUserRole(request.tenantId, identityPool.IdentityPoolId, userPool.Arn);
+  const userRole = roles[2];
 
   // create identity pool
   await setIdentityPoolRoles(userPoolId, clientId, identityPoolId, authRole, adminRole, userRole);
 
   return {
-    UserPoolId: userPool.Id as string,
+    UserPoolId: defaultTo(userPool.Id, ''),
+    ClientId: userPoolClient.ClientId,
+    IdentityPoolId: identityPool.IdentityPoolId,
+    AdminRoleArn: adminRole.Arn,
+    UserRoleArn: userRole.Arn,
+    AuthRoleArn: authRole.Arn,
+  };
+};
+
+/**
+ * provision cognito and system admin user
+ *
+ * @param request
+ */
+export const provisionSystemAdminUserWithRoles = async (
+  request: User.CreateAdminRequest
+): Promise<User.TenantInfos> => {
+  logger.debug('Provision admin user with roles.');
+
+  // create user pool
+  const userPool = await createUserPool(request.tenantId);
+  // user pool id
+  const userPoolId = userPool.Id as string;
+
+  // create user pool client
+  const userPoolClient = await createUserPoolClient(userPool);
+  // user pool client id
+  const clientId = userPoolClient.ClientId as string;
+  // user pool client name
+  const clientName = userPoolClient.ClientName as string;
+
+  // create identity pool
+  const identityPool = await createIdentiyPool(userPoolId, clientId, clientName);
+  // identity pool id
+  const identityPoolId = identityPool.IdentityPoolId;
+
+  const roles = await Promise.all([
+    await createAuthRole(request.tenantId, identityPool.IdentityPoolId),
+    await createSystemAdminRole(request.tenantId, identityPool.IdentityPoolId),
+    await createSystemUserRole(request.tenantId, identityPool.IdentityPoolId),
+  ]);
+  // auth role
+  const authRole = roles[0];
+  // admin user role
+  const adminRole = roles[1];
+  // normal user role
+  const userRole = roles[2];
+
+  // create identity pool
+  await setIdentityPoolRoles(userPoolId, clientId, identityPoolId, authRole, adminRole, userRole);
+
+  return {
+    UserPoolId: defaultTo(userPool.Id, ''),
     ClientId: userPoolClient.ClientId as string,
     IdentityPoolId: identityPool.IdentityPoolId,
+    AdminRoleArn: adminRole.Arn,
+    UserRoleArn: userRole.Arn,
+    AuthRoleArn: authRole.Arn,
   };
 };
 
@@ -102,7 +188,7 @@ const createAuthRole = async (tenantId: string, identityPoolId: string) => {
  * @param identityPoolId identity pool id
  * @param userpoolArn userpool arn
  */
-const createAdminRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
+const createTenantAdminRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
   const principals = COGNITO_PRINCIPALS(identityPoolId);
 
   const helper = new DynamodbHelper({ options: { endpoint: Environments.AWS_ENDPOINT_URL } });
@@ -112,7 +198,7 @@ const createAdminRole = async (tenantId: string, identityPoolId: string, userpoo
   const order = await client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
   const product = await client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
 
-  const adminPolicy = ADMIN_POLICY(
+  const adminPolicy = TENANT_ADMIN_POLICY(
     tenantId,
     userpoolArn,
     user.Table?.TableArn,
@@ -141,13 +227,13 @@ const createAdminRole = async (tenantId: string, identityPoolId: string, userpoo
 };
 
 /**
- * Create user role
+ * Create tenant user role
  *
  * @param tenantId tenant id
  * @param identityPoolId identity pool id
  * @param userpoolArn userpool arn
  */
-const createUserRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
+const createTenantUserRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
   const principals = COGNITO_PRINCIPALS(identityPoolId);
 
   const helper = new DynamodbHelper();
@@ -157,12 +243,103 @@ const createUserRole = async (tenantId: string, identityPoolId: string, userpool
   const order = await client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
   const product = await client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
 
-  const userPolicy = USER_POLICY(
+  const userPolicy = TENANT_USER_POLICY(
     tenantId,
     userpoolArn,
     user.Table?.TableArn,
     order.Table?.TableArn,
     product.Table?.TableArn
+  );
+
+  const iam = new IAM();
+
+  const userRole = await iam
+    .createRole({
+      RoleName: `SaaS_${tenantId}_UserRole`,
+      AssumeRolePolicyDocument: principals,
+    })
+    .promise();
+
+  await iam
+    .putRolePolicy({
+      RoleName: userRole.Role.RoleName,
+      PolicyName: 'UserPolicy',
+      PolicyDocument: userPolicy,
+    })
+    .promise();
+
+  return userRole.Role;
+};
+
+/**
+ * Create system admin user role
+ *
+ * @param tenantId tenant id
+ * @param identityPoolId identity pool id
+ * @param userpoolArn userpool arn
+ */
+const createSystemAdminRole = async (tenantId: string, identityPoolId: string) => {
+  const principals = COGNITO_PRINCIPALS(identityPoolId);
+
+  const helper = new DynamodbHelper({ options: { endpoint: Environments.AWS_ENDPOINT_URL } });
+  const client = helper.getClient();
+
+  const tenant = await client.describeTable({ TableName: Environments.TABLE_NAME_TENANT }).promise();
+  const user = await client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise();
+  const order = await client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
+  const product = await client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
+
+  const adminPolicy = SYSTEM_ADMIN_POLICY(
+    tenant.Table?.TableArn,
+    user.Table?.TableArn,
+    order.Table?.TableArn,
+    product.Table?.TableArn
+  );
+
+  const iam = new IAM();
+
+  const adminRole = await iam
+    .createRole({
+      RoleName: `SaaS_${tenantId}_AdminRole`,
+      AssumeRolePolicyDocument: principals,
+    })
+    .promise();
+
+  await iam
+    .putRolePolicy({
+      RoleName: adminRole.Role.RoleName,
+      PolicyName: 'AdminPolicy',
+      PolicyDocument: adminPolicy,
+    })
+    .promise();
+
+  return adminRole.Role;
+};
+
+/**
+ * Create system user user role
+ *
+ * @param tenantId tenant id
+ * @param identityPoolId identity pool id
+ */
+const createSystemUserRole = async (tenantId: string, identityPoolId: string) => {
+  const principals = COGNITO_PRINCIPALS(identityPoolId);
+
+  const helper = new DynamodbHelper();
+  const client = helper.getClient();
+
+  const results = await Promise.all([
+    client.describeTable({ TableName: Environments.TABLE_NAME_TENANT }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise(),
+  ]);
+
+  const userPolicy = SYSTEM_USER_POLICY(
+    results[0].Table?.TableArn,
+    results[1].Table?.TableArn,
+    results[2].Table?.TableArn,
+    results[3].Table?.TableArn
   );
 
   const iam = new IAM();
@@ -233,7 +410,7 @@ export const lookupUserPoolData = async (
 
   const searchParams = {
     id: userId,
-    tenant_id: tenantId,
+    tenantId: tenantId,
   };
 
   // get the item from the database

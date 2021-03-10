@@ -60,7 +60,7 @@ export const COGNITO_PRINCIPALS = (identityPoolId: string) => `{
 `;
 
 /**
- * admin user policy
+ * tenant admin user policy
  *
  * @param tenantId tenant id
  * @param userpoolArn user pool arn
@@ -68,7 +68,7 @@ export const COGNITO_PRINCIPALS = (identityPoolId: string) => `{
  * @param orderArn order table arn
  * @param productArn product table arn
  */
-export const ADMIN_POLICY = (
+export const TENANT_ADMIN_POLICY = (
   tenantId: string,
   userpoolArn: string,
   userArn?: string,
@@ -128,7 +128,7 @@ export const ADMIN_POLICY = (
  * @param orderArn order table arn
  * @param productArn product table arn
  */
-export const USER_POLICY = (
+export const TENANT_USER_POLICY = (
   tenantId: string,
   userpoolArn: string,
   userArn?: string,
@@ -183,6 +183,100 @@ export const USER_POLICY = (
       "Effect": "Allow",
       "Action": ["cognito-idp:AdminGetUser", "cognito-idp:ListUsers"],
       "Resource": ["${userpoolArn}"]
+    }
+  ]
+}
+`;
+
+/**
+ * system admin user policy
+ *
+ * @param tenantArn tenant table arn
+ * @param userArn user table arn
+ * @param orderArn order table arn
+ * @param productArn product table arn
+ */
+export const SYSTEM_ADMIN_POLICY = (tenantArn?: string, userArn?: string, orderArn?: string, productArn?: string) => `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:*"],
+      "Resource": [
+        "${tenantArn}", 
+        "${userArn}",
+        "${userArn}/*",
+        "${orderArn}",
+        "${productArn}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cognito-identity:*",
+        "cognito-idp:*"
+      ],
+      "Resource": ["*"]
+    }
+  ]
+}
+`;
+
+/**
+ * system admin user policy
+ *
+ * @param tenantArn tenant table arn
+ * @param userArn user table arn
+ * @param orderArn order table arn
+ * @param productArn product table arn
+ */
+export const SYSTEM_USER_POLICY = (tenantArn?: string, userArn?: string, orderArn?: string, productArn?: string) => `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:BatchGetItem",
+        "dynamodb:Scan",
+        "dynamodb:Query",
+        "dynamodb:DescribeTable",
+        "dynamodb:CreateTable"
+      ],
+      "Resource": [
+        "${tenantArn}", 
+        "${userArn}",
+        "${orderArn}",
+        "${productArn}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cognito-identity:DescribeIdentity",
+        "cognito-identity:DescribeIdentityPool",
+        "cognito-identity:GetIdentityPoolRoles",
+        "cognito-identity:ListIdentities",
+        "cognito-identity:ListIdentityPools",
+        "cognito-identity:LookupDeveloperIdentity",
+        "cognito-idp:AdminGetDevice",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminListDevices",
+        "cognito-idp:AdminListGroupsForUser",
+        "cognito-idp:AdminResetUserPassword",
+        "cognito-idp:DescribeUserImportJob",
+        "cognito-idp:DescribeUserPool",
+        "cognito-idp:DescribeUserPoolClient",
+        "cognito-idp:GetCSVHeader",
+        "cognito-idp:GetGroup",
+        "cognito-idp:ListGroups",
+        "cognito-idp:ListUserImportJobs",
+        "cognito-idp:ListUserPoolClients",
+        "cognito-idp:ListUserPools",
+        "cognito-idp:ListUsers",
+        "cognito-idp:ListUsersInGroup"
+      ],
+      "Resource": ["*"]
     }
   ]
 }

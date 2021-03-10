@@ -31,3 +31,17 @@ Content-Type: application/json
 GET http://localhost:8080/users
 Content-Type: application/json
 Authorization: Bearer eyJraWQiOiJiaTlyVyt6UTBhZ0E3b2VvUjhcLzY4am1FUDFURm1XUWo1SVVqcDM2WVphZz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJjN2MyYmY1Ny0yYzg1LTQ1NWYtODQzYS01ZmQ1NmE1YzM3ZDQiLCJldmVudF9pZCI6IjFlNzQ0ZmNiLWQ2NzktNDlmZi1iNDA2LTU5ODNiNmQwMTJhMCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2MTUzNDk4NzMsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMl8xRkZQVnIyY1YiLCJleHAiOjE2MTUzNTM0NzMsImlhdCI6MTYxNTM0OTg3MywianRpIjoiNmIyNmIyMWEtOWM1NS00NzMxLTkzZjktMjc2MmUyODcyNDlmIiwiY2xpZW50X2lkIjoiNWJxdDYzcWR1azIzaW5zYzdzOWxnanZzZW0iLCJ1c2VybmFtZSI6Ind3YWxwaGFAZ21haWwuY29tIn0.AHgAiCl9aa2CLTRpSdb3EsCBTWVcWcIaLA2kyeI-RRjE_rhs2tv7FDII-p0OUh48YX9eSgZ2-9fFCijFYp1bqwMkaubWl8zIGrw0Pk5ZXYBF2hMdnmIK2EJyq9AUYddjggPiikOUGFyDast876IXUfgkrwf5TKRouHaGs2CXe32BOYCg7gPalurOb_74KIS8LWMKkSceQxgCKGE9yN5tg1cq-fCyMfA-HJSzTv5cghxQ2jGEz1Dbikyz6E2FAngA-93-rN4MkxlUWIDI17mJSxyrSB1kPIFvYSXPojXb74RVYYfnd1ICWe5_i1AcEDTs3qviRHmNfwGkyFw_fv6uSQ
+
+
+POST http://localhost:8080/user/system
+Content-Type: application/json
+
+{
+  "tenantId": "ADMIN_TEST001",
+  "companyName": "SystemCompany",
+  "username": "wwalpha@gmail.com",
+  "email": "wwalpha@gmail.com",
+  "firstName": "first111",
+  "lastName": "last222",
+  "tier": "System"
+}

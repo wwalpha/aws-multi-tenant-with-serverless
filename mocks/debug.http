@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
   "email": "wwalpha@gmail.com",
-  "companyName":"dxc",
+  "companyName":"company001",
   "firstName":"first001",
   "lastName":"last001",
   "tier":"Standard"

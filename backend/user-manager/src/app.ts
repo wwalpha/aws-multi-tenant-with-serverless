@@ -10,6 +10,7 @@ import {
   getLogger,
   lookupUserPoolData,
   provisionAdminUserWithRoles,
+  provisionSystemAdminUserWithRoles,
 } from './utils';
 import { User } from 'typings';
 import { getTenantIdFromToken, getUserPoolIdFromToken } from './token';
@@ -23,26 +24,6 @@ AWS.config.update({
   region: Environments.AWS_DEFAULT_REGION,
   dynamodb: { endpoint: Environments.AWS_ENDPOINT_URL },
 });
-
-/** catch undefined errors */
-export const common = async (req: express.Request, res: express.Response, app: any) => {
-  // logger.info(`request: ${JSON.stringify(req.body)}`);
-  logger.info('request', req.body);
-
-  try {
-    const results = await app(req, res);
-
-    logger.info('response', results);
-
-    res.status(200).send(results);
-  } catch (err) {
-    logger.error('unhandled error', err);
-
-    const message = defaultTo(err.message, err.response?.data);
-
-    res.status(400).send(message);
-  }
-};
 
 /**
  * lookup user in cognito
@@ -71,8 +52,8 @@ export const lookupUser = async (req: express.Request): Promise<User.LookupUserR
  * @returns
  */
 export const createTenantAdmin = async (
-  req: express.Request<any, any, User.CreateTenantAdminRequest>
-): Promise<User.CreateTenantAdminResponse> => {
+  req: express.Request<any, any, User.CreateAdminRequest>
+): Promise<User.CreateAdminResponse> => {
   logger.debug('Creating a tenant admin user.');
 
   const request = req.body;
@@ -82,7 +63,28 @@ export const createTenantAdmin = async (
   // create admin user
   const userItem = await createNewUser(request, cognito, 'TENANT_ADMIN');
 
-  return userItem as User.CreateTenantAdminResponse;
+  return userItem as User.CreateAdminResponse;
+};
+
+/**
+ * Create a system admin user
+ *
+ * @param req request
+ * @returns
+ */
+export const createSystemAdmin = async (
+  req: express.Request<any, any, User.CreateAdminRequest>
+): Promise<User.CreateAdminResponse> => {
+  logger.debug('Creating a system admin user.');
+
+  const request = req.body;
+
+  // create cognito user pool and identity pool
+  const cognito = await provisionSystemAdminUserWithRoles(request);
+  // create admin user
+  const userItem = await createNewUser(request, cognito, 'TENANT_ADMIN');
+
+  return userItem as User.CreateAdminResponse;
 };
 
 /**

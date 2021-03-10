@@ -6,21 +6,26 @@
   "author": "wwalpha <wwalpha@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "yarn build:all && yarn compose:restart && yarn clean",
+    "start": "yarn npm-run-all -p check:* && yarn npm-run-all -p build:* && yarn compose:restart && yarn clean",
+    "valid": "yarn npm-run-all -p check:*",
     "build:token": "cd backend/token-manager && yarn build:docker",
     "build:tenant": "cd backend/tenant-manager && yarn build:docker",
     "build:user": "cd backend/user-manager && yarn build:docker",
-    "build:tenantReg": "cd backend/tenant-registry && yarn build:docker",
-    "build:all" :"yarn build:token && yarn build:tenant && yarn build:user && yarn build:tenantReg",
+    "build:tenantReg": "cd backend/tenant-registration && yarn build:docker",
+    "build:systemReg": "cd backend/system-registration && yarn build:docker",
+    "check:token": "cd backend/token-manager && tsc --noemit",
+    "check:tenant": "cd backend/tenant-manager && tsc --noemit",
+    "check:user": "cd backend/user-manager && tsc --noemit",
+    "check:tenantReg": "cd backend/tenant-registration && tsc --noemit",
+    "check:systemReg": "cd backend/system-registration && tsc --noemit",
     "compose:down": "docker-compose -f 'mocks/docker-compose.yml' down",
     "compose:up": "docker-compose -f 'mocks/docker-compose.yml' up -d --build",
     "compose:restart": "yarn compose:down && yarn compose:up",
     "clean": "docker image prune --force",
-    "act" :"act push --platform ubuntu-18.04=wwalpha/act-ubuntu:18.04 --secret-file .secrets -W .github/workflows/tenant.yml",
-    "check:all" :"yarn check:token && yarn check:tenant && yarn check:user && yarn check:tenantReg",
-    "check:token": "cd backend/token-manager && tsc --noemit",
-    "check:tenant": "cd backend/tenant-manager && tsc --noemit",
-    "check:user": "cd backend/user-manager && tsc --noemit",
-    "check:tenantReg": "cd backend/tenant-registry && tsc --noemit"
+    "act": "act push --platform ubuntu-18.04=wwalpha/act-ubuntu:18.04 --secret-file .secrets -W .github/workflows/tenant.yml",
+    "kill": "lsof -i :${PORT:-8080} -t | xargs kill"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
   }
 }
