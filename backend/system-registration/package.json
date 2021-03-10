@@ -1,0 +1,46 @@
+{
+  "name": "system-registration",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "build": "tsc -p tsconfig.build.json",
+    "build:docker": "cd .. && docker build --build-arg TARGET_FOLDER=system-registration -t saas/system-reg -f ./system-registration/Dockerfile .",
+    "test": "jest --detectOpenHandles",
+    "debug": "nodemon"
+  },
+  "devDependencies": {
+    "@jest/types": "^26.6.2",
+    "@types/express": "^4.17.11",
+    "@types/jest": "^26.0.20",
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^14.14.31",
+    "@types/supertest": "^2.0.10",
+    "@types/uuid": "^8.3.0",
+    "dotenv": "^8.2.0",
+    "jest": "^26.6.3",
+    "nodemon": "^2.0.7",
+    "supertest": "^6.1.3",
+    "ts-jest": "^26.5.3",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.853.0",
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "dynamodb-helper": "https://github.com/wwalpha/dynamodb-helper.git",
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts",
+    "exec": "ts-node -r dotenv/config src/index.ts"
+  }
+}
