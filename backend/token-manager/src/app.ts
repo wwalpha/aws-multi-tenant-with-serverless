@@ -1,4 +1,5 @@
 import express from 'express';
+import { defaultTo } from 'lodash';
 import { authenticateUserInPool, decodeToken, getLogger, getUserPoolWithParams } from './utils';
 import { Token } from 'typings';
 
@@ -67,6 +68,3 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Tok
     sessionToken: credetials.SessionToken,
   };
 };
-function defaultTo(message: any, data: any) {
-  throw new Error('Function not implemented.');
-}
