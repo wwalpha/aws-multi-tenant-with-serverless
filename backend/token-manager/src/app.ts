@@ -17,7 +17,9 @@ export const common = async (req: express.Request, res: express.Response, app: a
   } catch (err) {
     logger.error('Unhandle error', err);
 
-    res.status(400).send(err.message);
+    const message = defaultTo(err.message, err.response?.data);
+
+    res.status(400).send(message);
   }
 };
 
@@ -65,3 +67,6 @@ export const getCredentialsFromToken = async (req: express.Request): Promise<Tok
     sessionToken: credetials.SessionToken,
   };
 };
+function defaultTo(message: any, data: any) {
+  throw new Error('Function not implemented.');
+}

@@ -23,7 +23,7 @@ export const Endpoints = {
   /** User Manager: Get a list of users using a tenant id to scope the list */
   GET_USERS: `${Environments.SERVICE_ENDPOINT_USER}/users`,
   /** Tenant Manager: create a tenant */
-  CREATE_TENANT: (tenantId: string) => `${Environments.SERVICE_ENDPOINT_TENANT}/tenant/${tenantId}`,
+  CREATE_TENANT: `${Environments.SERVICE_ENDPOINT_TENANT}/tenant`,
   /** Tenant Manager: get tenant details */
   GET_TENANT: (tenantId: string) => `${Environments.SERVICE_ENDPOINT_TENANT}/tenant/${tenantId}`,
   /** Tenant Manager: update tenant details */
