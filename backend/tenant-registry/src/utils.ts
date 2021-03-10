@@ -4,25 +4,17 @@ import winston from 'winston';
 import { Tenant, TenantReg, User } from 'typings';
 import { Endpoints } from './consts';
 
-// Init the winston log level
-winston.add(new winston.transports.Console({ level: 'debug' }));
+// Configure Logging
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: {
+    service: 'user-service',
+  },
+  transports: [new winston.transports.Console({ level: 'debug' })],
+});
 
-/** catch undefined errors */
-export const common = async (req: express.Request, res: express.Response, app: any) => {
-  winston.info(`request: ${JSON.stringify(req.body)}`);
-
-  try {
-    const results = await app(req, res);
-
-    winston.info('response', results);
-
-    res.status(200).send(results);
-  } catch (err) {
-    winston.error(err);
-
-    res.status(400).send(err.message);
-  }
-};
+export const getLogger = () => logger;
 
 /** check tenant exist */
 export const tenantExists = async (userName: string): Promise<boolean> => {
@@ -35,19 +27,19 @@ export const tenantExists = async (userName: string): Promise<boolean> => {
 export const registTenantAdmin = async (
   tenantId: string,
   request: TenantReg.RegistTenantRequest
-): Promise<User.TenantAdminRegistResponse> => {
+): Promise<User.CreateTenantAdminResponse> => {
   // init the request with tenant data
-  const tenantAdmin: User.TenantAdminRegistRequest = {
+  const tenantAdmin: User.CreateTenantAdminRequest = {
     tenantId: tenantId,
     companyName: request.companyName,
-    userName: request.email,
     firstName: request.firstName,
     lastName: request.lastName,
+    email: request.email,
     tier: request.tier,
   };
 
   // regist tenant admin
-  const res = await axios.post<User.TenantAdminRegistResponse>(Endpoints.GET_TENANT(tenantId), tenantAdmin);
+  const res = await axios.post<User.CreateTenantAdminResponse>(Endpoints.CREATE_TENANT_ADMIN, tenantAdmin);
 
   if (res.status !== 200) {
     throw new Error(`Tenant admin create failed. ${res.data}`);
@@ -57,10 +49,13 @@ export const registTenantAdmin = async (
 };
 
 /** save tenant informations */
-export const saveTenant = async (request: TenantReg.RegistTenantRequest, item: User.TenantAdminRegistResponse) => {
-  const tenant: Tenant.RegistTenantRequest = {
+export const saveTenant = async (request: TenantReg.RegistTenantRequest, item: User.CreateTenantAdminResponse) => {
+  const tenant: Tenant.CreateTenantRequest = {
+    id: item.tenantId,
     ownerName: item.id,
     email: item.email,
+    firstName: request.firstName,
+    lastName: request.lastName,
     companyName: request.companyName,
     tier: request.tier,
     userPoolId: item.userPoolId,
@@ -69,5 +64,5 @@ export const saveTenant = async (request: TenantReg.RegistTenantRequest, item: U
   };
 
   // create a tenant
-  await axios.post<Tenant.RegistTenantResponse>(Endpoints.CREATE_TENANT(item.tenantId), tenant);
+  await axios.post<Tenant.CreateTenantResponse>(Endpoints.CREATE_TENANT, tenant);
 };
