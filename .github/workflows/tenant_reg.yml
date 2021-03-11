@@ -11,7 +11,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: saas/tenant_reg
-  TAKS_DEFINITION: onecloud-saas-tenant-reg
+  TAKS_DEFINITION: onecloud-saas-tenant-registration
   TAKS_DEFINITION_FILE: ./task_definition.json
   SERVICE_NAME: tenant_registration_service
   CLUSTER_NAME: saas_serverless_cluster
