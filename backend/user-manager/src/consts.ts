@@ -16,6 +16,8 @@ export const Endpoints = {
   CREDENTIALS_FROM_TOKEN: `${Environments.SERVICE_ENDPOINT_TOKEN}/token/user`,
   /** User Manager: registry tenant admin user */
   CREATE_TENANT_ADMIN: `${Environments.SERVICE_ENDPOINT_USER}/user/admin`,
+  /** User Manager: registry system admin user */
+  CREATE_SYSTEM_ADMIN: `${Environments.SERVICE_ENDPOINT_USER}/user/system`,
   /** User Manager: find user */
   LOOKUP_USER: (userName: string) => `${Environments.SERVICE_ENDPOINT_USER}/user/pool/${userName}`,
   /** User Manager: destroy all tenant include cognito pool, identity pool, iam */

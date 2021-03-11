@@ -50,9 +50,9 @@ export const common = async (req: express.Request, res: express.Response, app: a
 
     res.status(200).send(results);
   } catch (err) {
-    logger.error('unhandled error', err);
+    logger.error('unhandled error:', err);
 
-    const message = defaultTo(err.message, err.response?.data);
+    const message = defaultTo(err.response?.data, err.message);
 
     res.status(400).send(message);
   }
@@ -189,21 +189,29 @@ const createAuthRole = async (tenantId: string, identityPoolId: string) => {
  * @param userpoolArn userpool arn
  */
 const createTenantAdminRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
+  logger.debug('Provision tenant admin role...');
+
   const principals = COGNITO_PRINCIPALS(identityPoolId);
 
-  const helper = new DynamodbHelper({ options: { endpoint: Environments.AWS_ENDPOINT_URL } });
+  const helper = new DynamodbHelper();
   const client = helper.getClient();
 
-  const user = await client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise();
-  const order = await client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
-  const product = await client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
+  const tables = await Promise.all([
+    client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise(),
+  ]);
+
+  logger.debug(`Tenant table arn: ${tables[0].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[1].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[2].Table?.TableArn}`);
 
   const adminPolicy = TENANT_ADMIN_POLICY(
     tenantId,
     userpoolArn,
-    user.Table?.TableArn,
-    order.Table?.TableArn,
-    product.Table?.TableArn
+    tables[0].Table?.TableArn,
+    tables[1].Table?.TableArn,
+    tables[2].Table?.TableArn
   );
 
   const iam = new IAM();
@@ -234,21 +242,29 @@ const createTenantAdminRole = async (tenantId: string, identityPoolId: string, u
  * @param userpoolArn userpool arn
  */
 const createTenantUserRole = async (tenantId: string, identityPoolId: string, userpoolArn: string = '') => {
+  logger.debug('Provision tenant user role...');
+
   const principals = COGNITO_PRINCIPALS(identityPoolId);
 
   const helper = new DynamodbHelper();
   const client = helper.getClient();
 
-  const user = await client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise();
-  const order = await client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
-  const product = await client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
+  const tables = await Promise.all([
+    client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise(),
+  ]);
+
+  logger.debug(`Tenant table arn: ${tables[0].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[1].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[2].Table?.TableArn}`);
 
   const userPolicy = TENANT_USER_POLICY(
     tenantId,
     userpoolArn,
-    user.Table?.TableArn,
-    order.Table?.TableArn,
-    product.Table?.TableArn
+    tables[0].Table?.TableArn,
+    tables[1].Table?.TableArn,
+    tables[2].Table?.TableArn
   );
 
   const iam = new IAM();
@@ -279,22 +295,33 @@ const createTenantUserRole = async (tenantId: string, identityPoolId: string, us
  * @param userpoolArn userpool arn
  */
 const createSystemAdminRole = async (tenantId: string, identityPoolId: string) => {
+  logger.debug('Provision system admin role...');
+
   const principals = COGNITO_PRINCIPALS(identityPoolId);
 
-  const helper = new DynamodbHelper({ options: { endpoint: Environments.AWS_ENDPOINT_URL } });
+  const helper = new DynamodbHelper();
   const client = helper.getClient();
 
-  const tenant = await client.describeTable({ TableName: Environments.TABLE_NAME_TENANT }).promise();
-  const user = await client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise();
-  const order = await client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise();
-  const product = await client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise();
+  const tables = await Promise.all([
+    client.describeTable({ TableName: Environments.TABLE_NAME_TENANT }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_USER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_ORDER }).promise(),
+    client.describeTable({ TableName: Environments.TABLE_NAME_PRODUCT }).promise(),
+  ]);
+
+  logger.debug(`Tenant table arn: ${tables[0].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[1].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[2].Table?.TableArn}`);
+  logger.debug(`Tenant table arn: ${tables[3].Table?.TableArn}`);
 
   const adminPolicy = SYSTEM_ADMIN_POLICY(
-    tenant.Table?.TableArn,
-    user.Table?.TableArn,
-    order.Table?.TableArn,
-    product.Table?.TableArn
+    tables[0].Table?.TableArn,
+    tables[1].Table?.TableArn,
+    tables[2].Table?.TableArn,
+    tables[3].Table?.TableArn
   );
+
+  logger.debug('System admin role policy', adminPolicy);
 
   const iam = new IAM();
 

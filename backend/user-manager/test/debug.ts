@@ -3,14 +3,14 @@ import { Auth, CognitoUser } from '@aws-amplify/auth';
 
 const client = new CognitoIdentityServiceProvider({ region: 'ap-northeast-2' });
 
-const clientId = '5rf94otdosgqr1lpaptfa6fngi';
-const identityPoolId = 'ap-northeast-2:1554ef52-a994-4ef9-a408-ae4d889718bb';
-const userPoolId = 'ap-northeast-2_JMl8t0KOp';
+const clientId = 'r6bspt1frchn70a950er8lnbg';
+const identityPoolId = 'ap-northeast-2:ae278997-c9e9-4a7f-bca1-7df2724622c4';
+const userPoolId = 'ap-northeast-2_SuV3AAVmt';
 const username = 'wwalpha@gmail.com';
 const newPassword = '6RXJzYRZ';
 
 const start = async () => {
-  const oldPassword = 'JFYzkr0u';
+  const oldPassword = 'yFRfkJI7';
 
   const r = await client
     .adminInitiateAuth({
@@ -60,6 +60,4 @@ const login = async () => {
   console.log(u.getSignInUserSession()?.getIdToken().getJwtToken());
 };
 
-login();
-
-// start();
+start().then(() => login());

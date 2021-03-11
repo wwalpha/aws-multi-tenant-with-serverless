@@ -2,16 +2,15 @@ import axios from 'axios';
 import { v4 } from 'uuid';
 import request from 'supertest';
 import { DynamodbHelper } from 'dynamodb-helper';
-import server from '../src/server';
+import server from './server';
 import { User, Tables } from 'typings';
-import { Environments } from '../src/consts';
+import { Environments } from './consts';
 import { clean, initialize } from './utils';
 
 axios.defaults.baseURL = 'http://localhost:8080';
 
 let userPoolId: string;
 let identityPoolId: string;
-let userId: string;
 
 describe('user manager test', () => {
   const tenantId = `TENANT${v4().split('-').join('')}`;
@@ -26,7 +25,7 @@ describe('user manager test', () => {
     },
   });
 
-  it.skip('service health check', async () => {
+  it('service health check', async () => {
     const res = await request(server).get('/user/health');
 
     expect(res.status).toBe(200);
@@ -34,15 +33,16 @@ describe('user manager test', () => {
   });
 
   it('regist tenant admin user', async () => {
-    const res = await request(server)
-      .post('/user/reg')
-      .send({
-        tenantId: tenantId,
-        userName: userName,
-        firstName: 'first111',
-        lastName: 'last222',
-        tier: 'prod',
-      } as User.TenantAdminRegistRequest);
+    const send: User.CreateAdminRequest = {
+      tenantId: tenantId,
+      companyName: 'Company001',
+      email: userName,
+      firstName: 'first111',
+      lastName: 'last222',
+      tier: 'Standard',
+      userName: userName,
+    };
+    const res = await request(server).post('/user/admin').send(send);
 
     // status code
     expect(res.status).toBe(200);
@@ -54,8 +54,8 @@ describe('user manager test', () => {
         lastName: 'last222',
         role: 'TENANT_ADMIN',
         tenantId: tenantId,
-        tier: 'prod',
-        userName: userName,
+        tier: 'Standard',
+        companyName: 'Company001',
       })
     );
 
@@ -65,7 +65,7 @@ describe('user manager test', () => {
     expect(res.body).toHaveProperty('identityPoolId');
     expect(res.body).toHaveProperty('sub');
 
-    const response = res.body as User.TenantAdminRegistResponse;
+    const response = res.body as User.CreateAdminResponse;
 
     const tenant = await helper.get({
       TableName: Environments.TABLE_NAME_USER,
@@ -82,33 +82,25 @@ describe('user manager test', () => {
 
     userPoolId = response.userPoolId;
     identityPoolId = response.identityPoolId;
-    userId = response.id;
   });
 
-  it.skip('lookup user and founded', async () => {
+  it('lookup user and founded', async () => {
     const res = await request(server).get(`/user/pool/${userName}`);
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ isExist: true });
   });
 
-  it.skip('lookup user and not found', async () => {
+  it('lookup user and not found', async () => {
     const res = await request(server).get('/user/pool/f8917caf-aa3f-4b22-b33f-846b45ce9924');
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ isExist: false });
   });
 
-  it('get all users', async () => {
-    const res = await request(server).get('/users');
-
-    expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({});
-  });
-
   it('Delete tenant', async () => {
     const res = await request(server)
-      .delete('/user/tenants')
+      .delete('/users/tenants')
       .send({
         tenantId: tenantId,
         userPoolId: userPoolId,

@@ -126,9 +126,17 @@ export const createUser = async (
   // get pool id
   const userPoolId = getUserPoolIdFromToken(req);
   // create new user
-  const userItem = await createNewUser(req.body, { UserPoolId: userPoolId }, 'TENANT_USER', credentials);
+  const user = await createNewUser(req.body, { UserPoolId: userPoolId }, 'TENANT_USER', credentials);
 
-  return { ...userItem, userName: userItem.email };
+  return {
+    tenantId: user.tenantId,
+    companyName: user.companyName,
+    userName: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    tier: user.tier,
+  };
 };
 
 /**
