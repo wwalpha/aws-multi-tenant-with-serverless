@@ -1,19 +1,24 @@
+import { DynamodbTables, ServiceEndpoints } from 'typings';
+
+const urls = JSON.parse(process.env.SERVICE_ENDPOINTS as string) as ServiceEndpoints;
+const tables = JSON.parse(process.env.DYNAMODB_TABLES as string) as DynamodbTables;
+
 export const Environments = {
   AWS_DEFAULT_REGION: process.env.AWS_DEFAULT_REGION as string,
-  TABLE_NAME_TENANT: process.env.TABLE_NAME_TENANT as string,
-  TABLE_NAME_USER: process.env.TABLE_NAME_USER as string,
-  TABLE_NAME_PRODUCT: process.env.TABLE_NAME_PRODUCT as string,
-  TABLE_NAME_ORDER: process.env.TABLE_NAME_ORDER as string,
-  SERVICE_ENDPOINT_TENANT: `http://${process.env.SERVICE_ENDPOINT_TENANT}`,
-  SERVICE_ENDPOINT_USER: `http://${process.env.SERVICE_ENDPOINT_USER}`,
-  SERVICE_ENDPOINT_AUTH: `http://${process.env.SERVICE_ENDPOINT_AUTH}`,
-  SERVICE_ENDPOINT_TOKEN: `http://${process.env.SERVICE_ENDPOINT_TOKEN}`,
+  TABLE_NAME_TENANT: tables.TABLE_NAME_TENANT as string,
+  TABLE_NAME_USER: tables.TABLE_NAME_USER as string,
+  TABLE_NAME_PRODUCT: tables.TABLE_NAME_PRODUCT as string,
+  TABLE_NAME_ORDER: tables.TABLE_NAME_ORDER as string,
+  SERVICE_ENDPOINT_TENANT: `http://${urls.SERVICE_ENDPOINT_TENANT}`,
+  SERVICE_ENDPOINT_USER: `http://${urls.SERVICE_ENDPOINT_USER}`,
+  SERVICE_ENDPOINT_AUTH: `http://${urls.SERVICE_ENDPOINT_AUTH}`,
+  SERVICE_ENDPOINT_TOKEN: `http://${urls.SERVICE_ENDPOINT_TOKEN}`,
   AWS_ENDPOINT_URL: process.env.AWS_ENDPOINT_URL,
 };
 
 export const Endpoints = {
   /** token-manager:  get credentials from token */
-  CREDENTIALS_FROM_TOKEN: `${Environments.SERVICE_ENDPOINT_TOKEN}/token/user`,
+  CREDENTIALS_FROM_TOKEN: `${urls.SERVICE_ENDPOINT_TOKEN}/token/user`,
   /** User Manager: registry tenant admin user */
   CREATE_TENANT_ADMIN: `${Environments.SERVICE_ENDPOINT_USER}/user/admin`,
   /** User Manager: registry system admin user */
