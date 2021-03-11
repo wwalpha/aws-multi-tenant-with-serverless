@@ -53,7 +53,7 @@ resource "aws_service_discovery_service" "tenant" {
 }
 
 # ----------------------------------------------------------------------------------------------
-# Service Discovery Service - Tenant Registry
+# Service Discovery Service - Tenant Registration
 # ----------------------------------------------------------------------------------------------
 resource "aws_service_discovery_service" "tenant_reg" {
   name = "tenant_reg"
@@ -101,6 +101,28 @@ resource "aws_service_discovery_service" "user" {
 # ----------------------------------------------------------------------------------------------
 resource "aws_service_discovery_service" "token" {
   name = "token"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.saas.id
+
+    dns_records {
+      ttl  = 60
+      type = "A"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# Service Discovery Service - System Registration
+# ----------------------------------------------------------------------------------------------
+resource "aws_service_discovery_service" "system_reg" {
+  name = "system_reg"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.saas.id

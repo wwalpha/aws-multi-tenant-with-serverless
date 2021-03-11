@@ -45,6 +45,18 @@ resource "null_resource" "lambda_build" {
 }
 
 # ----------------------------------------------------------------------------------------------
+# ECR - System Registration
+# ----------------------------------------------------------------------------------------------
+resource "aws_ecr_repository" "system_reg" {
+  name                 = "saas/system_reg"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
 # ECR - Tenant
 # ----------------------------------------------------------------------------------------------
 resource "aws_ecr_repository" "tenant" {

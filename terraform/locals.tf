@@ -8,12 +8,14 @@ locals {
   task_def_rev_user       = max(aws_ecs_task_definition.user.revision, data.aws_ecs_task_definition.user.revision)
   task_def_rev_tenant     = max(aws_ecs_task_definition.tenant.revision, data.aws_ecs_task_definition.tenant.revision)
   task_def_rev_tenant_reg = max(aws_ecs_task_definition.tenant_reg.revision, data.aws_ecs_task_definition.tenant_reg.revision)
+  task_def_rev_system_reg = max(aws_ecs_task_definition.system_reg.revision, data.aws_ecs_task_definition.system_reg.revision)
 
   # task_def_family_backend_auth = "onecloud-saas-backend-auth"
   task_def_family_token      = "onecloud-saas-token"
   task_def_family_user       = "onecloud-saas-user"
   task_def_family_tenant     = "onecloud-saas-tenant"
-  task_def_family_tenant_reg = "onecloud-saas-tenant-registry"
+  task_def_family_tenant_reg = "onecloud-saas-tenant-registration"
+  task_def_family_system_reg = "onecloud-saas-system-registration"
 }
 
 # ----------------------------------------------------------------------------------------------
@@ -52,4 +54,9 @@ data "aws_ecs_task_definition" "tenant" {
 data "aws_ecs_task_definition" "tenant_reg" {
   depends_on      = [aws_ecs_task_definition.tenant_reg]
   task_definition = aws_ecs_task_definition.tenant_reg.family
+}
+
+data "aws_ecs_task_definition" "system_reg" {
+  depends_on      = [aws_ecs_task_definition.system_reg]
+  task_definition = aws_ecs_task_definition.system_reg.family
 }

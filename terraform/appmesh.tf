@@ -200,3 +200,51 @@ resource "aws_appmesh_virtual_node" "user" {
     }
   }
 }
+
+
+
+# ----------------------------------------------------------------------------------------------
+# App Mesh - System Registry Virtual Service
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_service" "system_reg" {
+  name      = "${aws_service_discovery_service.system_reg.name}.${aws_service_discovery_private_dns_namespace.saas.name}"
+  mesh_name = aws_appmesh_mesh.saas.id
+
+  spec {
+    provider {
+      virtual_node {
+        virtual_node_name = aws_appmesh_virtual_node.tenant_reg.name
+      }
+    }
+  }
+}
+
+# ----------------------------------------------------------------------------------------------
+# App Mesh - Tenant Registry Virtual Node
+# ----------------------------------------------------------------------------------------------
+resource "aws_appmesh_virtual_node" "system_reg" {
+  name      = "system_reg_node"
+  mesh_name = aws_appmesh_mesh.saas.id
+
+  spec {
+    backend {
+      virtual_service {
+        virtual_service_name = aws_appmesh_virtual_service.tenant.name
+      }
+    }
+
+    listener {
+      port_mapping {
+        port     = 8080
+        protocol = "http"
+      }
+    }
+
+    service_discovery {
+      aws_cloud_map {
+        service_name   = aws_service_discovery_service.system_reg.name
+        namespace_name = aws_service_discovery_private_dns_namespace.saas.name
+      }
+    }
+  }
+}

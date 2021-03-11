@@ -10,7 +10,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: saas/system-reg
+  ECR_REPOSITORY: saas/system_reg
   TAKS_DEFINITION: onecloud-saas-system-reg
   TAKS_DEFINITION_FILE: ./task_definition.json
   SERVICE_NAME: system_registration_service
