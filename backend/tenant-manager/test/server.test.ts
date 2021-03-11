@@ -7,7 +7,7 @@ import { Tables, Tenant } from 'typings';
 describe('tenant manager', () => {
   const tenantId = 'TENANT1234567890';
   const jwtToken =
-    'eyJraWQiOiJBMkNISnVCTTM2cDFMeDVcL28zM2NTY3JzTE1pUGRUOFlYVVFxTDRYblpcL0U9IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIyNzU5MjQ5Yi05OGM0LTRhNDAtOWI5NC1hOTI0NTZjMzY1YjgiLCJjdXN0b206dGllciI6IlN0YW5kYXJkIiwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLW5vcnRoZWFzdC0yLmFtYXpvbmF3cy5jb21cL2FwLW5vcnRoZWFzdC0yX0pNbDh0MEtPcCIsImNvZ25pdG86dXNlcm5hbWUiOiJ3d2FscGhhQGdtYWlsLmNvbSIsImN1c3RvbTp0ZW5hbnRfaWQiOiJURU5BTlRlN2RjODMwMjM1NTQ0NjczOTM2Yjg1NDZiYTUwODJiMyIsImdpdmVuX25hbWUiOiJmaXJzdDAwMSIsImF1ZCI6IjVyZjk0b3Rkb3NncXIxbHBhcHRmYTZmbmdpIiwiZXZlbnRfaWQiOiIzYmZhNTRjYy0zY2RjLTQxZmUtOTBlYi01MDg4ODc0NDBkNmQiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTYxNTM2MjI4OCwiZXhwIjoxNjE1MzY1ODg4LCJjdXN0b206cm9sZSI6IlRFTkFOVF9BRE1JTiIsImlhdCI6MTYxNTM2MjI4OCwiZmFtaWx5X25hbWUiOiJsYXN0MDAxIiwiZW1haWwiOiJ3d2FscGhhQGdtYWlsLmNvbSJ9.MWAnO97Zsa1ZB4hRLe40tVw5KmN2zJO-RT0nnUrnP70hizeGnEp0S8r5_jwMn8Wbl-I2BeW0ynbyCowZiIsQ2uUg6YpNQYjflBP4OngWWFY9hkJJwzt0Xk0T4lTiMuiNxBVewmkR-zv_EU1oJzRBVANbo8rkq1T_EWRGFvAC_lSHq8oloBU_dEw3V46UW3qGh51dekchdi4teBGpZdYAWHBSoE0_6nLXOUwJ36TOPkEeY1-2TosTuP9UGbG12so3yrz_6XPuE8eAxNR8M_NYcgM2zoWEc9yhqL-ZqIke30-d_WUI3Nlfg6X53jaD_Mie4xddrFalcZu03cQrzbDERQ';
+    'eyJraWQiOiJiVndWUzBnV3AzREh4dDhocEQ0QXQzcitZUjY5cUZmSVBmb3ZjcjJRcjJrPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJkMzY4ZDU2Zi1lYjc4LTRkYjUtYjQ1NS1hYmMwYTM1Y2JiZWMiLCJjdXN0b206dGllciI6IlNZU1RFTSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMl9TdVYzQUFWbXQiLCJjb2duaXRvOnVzZXJuYW1lIjoid3dhbHBoYUBnbWFpbC5jb20iLCJjdXN0b206dGVuYW50X2lkIjoiU1lTVEVNZmMwMDVhODNlMzgzNDU0MjhjMzUzODQ1YTQ2ZGI4NWMiLCJnaXZlbl9uYW1lIjoiZmlyc3QwMDEiLCJhdWQiOiJyNmJzcHQxZnJjaG43MGE5NTBlcjhsbmJnIiwiZXZlbnRfaWQiOiJjMmE3OGI5ZS1kMmJhLTRmNWItYmQ3MC00NzY4ZGRjZmFlYjciLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTYxNTM4MzAxOCwiZXhwIjoxNjE1Mzg2NjE4LCJjdXN0b206cm9sZSI6IlRFTkFOVF9BRE1JTiIsImlhdCI6MTYxNTM4MzAxOCwiZmFtaWx5X25hbWUiOiJsYXN0MDAxIiwiZW1haWwiOiJ3d2FscGhhQGdtYWlsLmNvbSJ9.avGh36kEFH0v_JBHVBGOBA2r6_HUN1C_TcMS-GE-5DbEf0h1w1pi8iHfYNDdgljspcwJbzO48JYWkaxV9iGQLLe6HeDWuHwpD6jA14wpNrelFrj7LKqMF20DcucHnTIvZpkTdsKD79dGrayT12fsT3ZLWkCoaZugGgKe_mqFaz-ZKd6D2W_cEh725fYA5k31lcRetmZz5yJqUwlQyaqXb6m3bQaJjkbFxkjFuSqs_3sC1xrKu-Nqg6KvYHQDr0W6dexuMXeiKcY5VeAIiIi2aZn213QnC_R22C1f7rbTRv0j4qCx7W_sz-ZE3XyqLGDumiBJ9IOwdWt2UgA6mAjW0Q';
 
   it('health check', async () => {
     const res = await request(server).get('/tenant/health');
@@ -71,14 +71,14 @@ describe('tenant manager', () => {
 
     expect(res.status).toBe(200);
 
-    const matchObject: Tenant.UpdateTenantResponse = {
+    const matchObject: Tenant.GetTenantResponse = {
       id: tenantId,
       ownerName: 'test@test.com',
-      email: 'test@test.com',
-      companyName: 'test111',
       firstName: 'first001',
       lastName: 'last001',
-      tier: 'Basic',
+      email: 'test@test.com',
+      companyName: 'company001',
+      tier: 'Standard',
       status: 'Active',
       userPoolId: 'user_pool_id',
       clientId: 'client_id',
@@ -89,7 +89,7 @@ describe('tenant manager', () => {
   });
 
   // update tenant
-  it.skip('update tenant details', async () => {
+  it('update tenant details', async () => {
     const send: Tenant.UpdateTenantRequest = {
       companyName: 'test111',
       tier: 'Basic',
@@ -105,24 +105,24 @@ describe('tenant manager', () => {
     expect(res.status).toBe(200);
 
     const matchObject: Tenant.UpdateTenantResponse = {
-      id: tenantId,
-      ownerName: 'test@test.com',
-      email: 'test@test.com',
+      // id: tenantId,
+      // ownerName: 'test@test.com',
+      // email: 'test@test.com',
       companyName: 'test111',
-      firstName: 'first001',
-      lastName: 'last001',
+      // firstName: 'first001',
+      // lastName: 'last001',
       tier: 'Basic',
-      status: 'Active',
-      userPoolId: 'user_pool_id',
-      clientId: 'client_id',
-      identityPoolId: 'identity_pool_id',
+      // status: 'Active',
+      // userPoolId: 'user_pool_id',
+      // clientId: 'client_id',
+      // identityPoolId: 'identity_pool_id',
     };
     // result
     expect(res.body).toMatchObject(matchObject);
   });
 
   // delete tenant
-  it.skip('delete tenant', async () => {
+  it('delete tenant', async () => {
     const res = await request(server).delete(`/tenant/${tenantId}`).set('Authorization', `Bearer ${jwtToken}`);
 
     expect(res.body).toMatchObject({ status: 'success' });

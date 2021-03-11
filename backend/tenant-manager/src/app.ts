@@ -1,5 +1,6 @@
 import express from 'express';
 import { DynamodbHelper } from 'dynamodb-helper';
+import { defaultTo } from 'lodash';
 import { getCredentialsFromToken, getLogger } from './utils';
 import { Tenant, Tables } from 'typings';
 import { Environments } from './consts';
@@ -19,7 +20,7 @@ export const common = async (req: express.Request, res: express.Response, app: a
   } catch (err) {
     logger.error('unhandle error', err);
 
-    const message = defaultTo(err.message, err.response?.data);
+    const message = defaultTo(err.response?.data, err.message);
 
     res.status(400).send(message);
   }
@@ -77,8 +78,11 @@ export const getTenant = async (req: express.Request): Promise<Tenant.GetTenantR
   }
 
   return {
+    id: tenant.Item.id,
     companyName: tenant.Item.companyName,
     ownerName: tenant.Item.ownerName,
+    firstName: tenant.Item.firstName,
+    lastName: tenant.Item.lastName,
     email: tenant.Item.ownerName,
     tier: tenant.Item.tier,
     status: tenant.Item.status,
@@ -107,7 +111,7 @@ export const updateTanant = async (
     Key: {
       id: req.params.id,
     } as Tables.TenantKey,
-    UpdateExpression: 'set companyName=:companyName, tier=:tier, ',
+    UpdateExpression: 'set companyName=:companyName, tier=:tier ',
     ExpressionAttributeValues: {
       ':companyName': req.body.companyName,
       ':tier': req.body.tier,
@@ -123,7 +127,7 @@ export const updateTanant = async (
   logger.debug('Tenant updated');
 
   // return updated item
-  return tenant.Attributes as Tables.TenantItem;
+  return tenant.Attributes as Tenant.UpdateTenantResponse;
 };
 
 /** delete tenant */
@@ -163,7 +167,10 @@ export const getAllTenants = async (
   });
 
   const response = results?.Items?.map<Tenant.GetTenantResponse>((item) => ({
+    id: item.id,
     ownerName: item.ownerName,
+    firstName: item.firstName,
+    lastName: item.lastName,
     email: item.ownerName,
     companyName: item.companyName,
     tier: item.tier,
@@ -180,6 +187,3 @@ export const getAllTenants = async (
 
   return response;
 };
-function defaultTo(message: any, data: any) {
-  throw new Error('Function not implemented.');
-}
