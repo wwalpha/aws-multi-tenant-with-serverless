@@ -29,9 +29,9 @@ export const common = async (req: express.Request, res: express.Response, app: a
 
     res.status(200).send(results);
   } catch (err) {
-    logger.error('unhandled error', err);
+    logger.error('unhandled error:', err);
 
-    const message = defaultTo(err.message, err.response?.data);
+    const message = defaultTo(err.response?.data, err.message);
 
     res.status(400).send(message);
   }
@@ -50,10 +50,10 @@ export const createSystemAdmin = async (
   request: SystemReg.RegistSystemTenantRequest
 ): Promise<User.CreateAdminResponse> => {
   // init the request with tenant data
-  const tenantAdmin: User.CreateAdminRequest = {
+  const systemAdmin: User.CreateAdminRequest = {
     tenantId: tenantId,
     companyName: request.companyName,
-    username: request.email,
+    userName: request.email,
     firstName: request.firstName,
     lastName: request.lastName,
     email: request.email,
@@ -61,7 +61,7 @@ export const createSystemAdmin = async (
   };
 
   // regist tenant admin
-  const res = await axios.post<User.CreateAdminResponse>(Endpoints.CREATE_TENANT_ADMIN, tenantAdmin);
+  const res = await axios.post<User.CreateAdminResponse>(Endpoints.CREATE_SYSTEM_ADMIN, systemAdmin);
 
   if (res.status !== 200) {
     throw new Error(`Tenant admin create failed. ${res.data}`);

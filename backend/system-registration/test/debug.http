@@ -1,0 +1,9 @@
+POST http://127.0.0.1:8080/system/admin
+Content-Type: application/json
+
+{
+  "email": "wwalpha@gmail.com",
+  "companyName":"company001",
+  "firstName":"first001",
+  "lastName":"last001"
+}

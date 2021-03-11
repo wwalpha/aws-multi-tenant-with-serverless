@@ -7,7 +7,7 @@ const logger = getLogger();
 
 /** health check */
 export const healthCheck = (_: express.Request, res: express.Response) => {
-  res.status(200).send({ service: 'Tenant Registration', isAlive: true });
+  res.status(200).send({ service: 'System Registration', isAlive: true });
 };
 
 /** regist system tenant */
