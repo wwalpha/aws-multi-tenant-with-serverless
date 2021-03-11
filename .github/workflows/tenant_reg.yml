@@ -13,7 +13,7 @@ env:
   ECR_REPOSITORY: saas/tenant_reg
   TAKS_DEFINITION: onecloud-saas-tenant-registration
   TAKS_DEFINITION_FILE: ./task_definition.json
-  SERVICE_NAME: tenant_registration_service
+  SERVICE_NAME: tenant_reg_service
   CLUSTER_NAME: saas_serverless_cluster
   WORKING_DIR: backend
   TARGET_FOLDER: tenant-registration
