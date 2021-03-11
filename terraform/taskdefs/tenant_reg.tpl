@@ -5,14 +5,8 @@
     "essential": true,
     "portMappings": [
       {
-        "containerPort": 80,
+        "containerPort": 8080,
         "protocol": "tcp"
-      }
-    ],
-    "environment": [
-      {
-        "name": "CONTAINER_PORT",
-        "value": "80"
       }
     ],
     "secrets":[
@@ -34,16 +28,6 @@
         "awslogs-region": "${aws_region}",
         "awslogs-stream-prefix": "ecs"
       }
-    },
-    "healthCheck": {
-      "retries": 3,
-      "command": [
-        "CMD-SHELL",
-        "curl -f http://localhost/reg/health || exit 1"
-      ],
-      "timeout": 2,
-      "interval": 5,
-      "startPeriod": 10
     }
   },
   {

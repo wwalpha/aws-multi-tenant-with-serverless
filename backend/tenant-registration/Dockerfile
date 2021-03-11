@@ -16,8 +16,6 @@ RUN apk update && apk add git && \
 FROM node:14-alpine
 # working dir
 WORKDIR /usr/local/app/
-# environment variables
-ENV CONTAINER_PORT=80
 
 COPY --from=build /usr/local/app/dist .
 COPY --from=build /usr/local/app/package.json .
@@ -25,6 +23,6 @@ COPY --from=build /usr/local/app/package.json .
 RUN apk update && apk add git
 RUN yarn install --production --no-lockfile
 
-EXPOSE $CONTAINER_PORT
+EXPOSE 8080
 
 CMD [ "yarn", "start"]
