@@ -32,11 +32,11 @@ export const registTenantAdmin = async (
   const tenantAdmin: User.CreateAdminRequest = {
     tenantId: tenantId,
     companyName: request.companyName,
+    userName: request.email,
+    email: request.email,
     firstName: request.firstName,
     lastName: request.lastName,
-    email: request.email,
     tier: request.tier,
-    username: request.email,
   };
 
   // regist tenant admin
