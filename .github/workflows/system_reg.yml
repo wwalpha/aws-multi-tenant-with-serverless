@@ -1,4 +1,4 @@
-name: system-registration-service
+name: system-registration-service1
 
 on:
   push:
