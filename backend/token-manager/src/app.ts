@@ -16,9 +16,9 @@ export const common = async (req: express.Request, res: express.Response, app: a
 
     res.status(200).send(results);
   } catch (err) {
-    logger.error('Unhandle error', err);
+    logger.error('Unhandle error:', err);
 
-    const message = defaultTo(err.message, err.response?.data);
+    const message = defaultTo(err.response?.data, err.message);
 
     res.status(400).send(message);
   }
