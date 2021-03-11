@@ -1,4 +1,4 @@
-name: tenant-registration-service1
+name: tenant-registration-service
 
 on:
   push:

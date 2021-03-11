@@ -1,4 +1,4 @@
-name: user-service
+name: user-service1
 
 on:
   push:

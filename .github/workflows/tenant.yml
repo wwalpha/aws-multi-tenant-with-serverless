@@ -1,4 +1,4 @@
-name: tenant-service
+name: tenant-service1
 
 on:
   push:

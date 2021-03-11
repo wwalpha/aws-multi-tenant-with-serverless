@@ -1,4 +1,4 @@
-name: token-service
+name: token-service1
 
 on:
   push:
