@@ -36,8 +36,14 @@ export interface CreateTenantResponse {
 export interface GetTenantRequest {}
 
 export interface GetTenantResponse {
+  // tenant id
+  id: string;
   // owner name
   ownerName: string;
+  // first name
+  firstName: string;
+  // last name
+  lastName: string;
   // email
   email: string;
   // company name
@@ -59,7 +65,10 @@ export interface UpdateTenantRequest {
   tier: string;
 }
 
-export interface UpdateTenantResponse extends TenantItem {}
+export interface UpdateTenantResponse {
+  companyName: string;
+  tier: string;
+}
 
 export interface DeleteTenantRequest {}
 

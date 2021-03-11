@@ -9,7 +9,7 @@ export interface TenantUser {
   /** company name */
   companyName: string;
   /** username */
-  username: string;
+  userName: string;
   /** first name */
   firstName: string;
   /** last name */
@@ -98,9 +98,7 @@ export interface LookupUserResponse {
 
 export interface CreateUserRequest extends TenantUser {}
 
-export interface CreateUserResponse extends TenantUser {
-  userName: string;
-}
+export interface CreateUserResponse extends TenantUser {}
 
 export interface GetUserRequest {}
 
