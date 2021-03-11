@@ -1,23 +1,23 @@
 version: '3'
 
 services:
-  localstack:
-    image: localstack/localstack
-    container_name: localstack
-    hostname: localstack
-    ports:
-      - 4566:4566
-    environment:
-      - SERVICES=serverless
-      - DEFAULT_REGION=ap-northeast-2
-      - DATA_DIR=/tmp/dynamodb
-      - USE_SSL=true
-    volumes:
-      - "${PWD}/mocks/datas:/tmp/localstack"
-      - "${PWD}/mocks/datas:/tmp/dynamodb"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    networks:
-      - internal
+  # localstack:
+  #   image: localstack/localstack
+  #   container_name: localstack
+  #   hostname: localstack
+  #   ports:
+  #     - 4566:4566
+  #   environment:
+  #     - SERVICES=serverless
+  #     - DEFAULT_REGION=ap-northeast-2
+  #     - DATA_DIR=/tmp/dynamodb
+  #     - USE_SSL=true
+  #   volumes:
+  #     - "${PWD}/mocks/datas:/tmp/localstack"
+  #     - "${PWD}/mocks/datas:/tmp/dynamodb"
+  #     - "/var/run/docker.sock:/var/run/docker.sock"
+  #   networks:
+  #     - internal
   token:
     image: saas/token
     container_name: token-manager
@@ -46,11 +46,20 @@ services:
       - internal
     env_file: ${PWD}/.env
   tenantReg:
-    image: saas/tenant-registry
-    container_name: tenant-registry
+    image: saas/tenant-reg
+    container_name: tenant-registration
     hostname: tenant-reg-service
     ports:
       - 8084:8080
+    networks:
+      - internal
+    env_file: ${PWD}/.env
+  systemReg:
+    image: saas/system-reg
+    container_name: system-registration
+    hostname: system-reg-service
+    ports:
+      - 8085:8080
     networks:
       - internal
     env_file: ${PWD}/.env

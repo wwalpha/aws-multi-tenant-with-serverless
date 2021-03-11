@@ -11,3 +11,15 @@ Content-Type: application/json
   "lastName":"last001",
   "tier":"Standard"
 }
+
+GET http://127.0.0.1:8085/system/health
+
+POST http://127.0.0.1:8085/system/admin
+Content-Type: application/json
+
+{
+  "email": "wwalpha@gmail.com",
+  "companyName":"company001",
+  "firstName":"first001",
+  "lastName":"last001"
+}
