@@ -65,6 +65,8 @@ jobs:
         run: |
           docker build --build-arg TARGET_FOLDER=$TARGET_FOLDER -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./$TARGET_FOLDER/Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       # update task definition
