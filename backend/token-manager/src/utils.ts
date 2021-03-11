@@ -3,7 +3,7 @@ import express from 'express';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import winston from 'winston';
-import { Endpoints, Environments } from './const';
+import { Endpoints, Environments } from './consts';
 import { Token, User } from 'typings';
 
 const logger = winston.createLogger({
