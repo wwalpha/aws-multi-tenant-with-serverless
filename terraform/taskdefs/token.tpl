@@ -5,9 +5,18 @@
     "essential": true,
     "portMappings": [
       {
-        "containerPort": 8080,
-        "hostPort": 8080,
+        "containerPort": 80,
         "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      {
+        "name": "DYNAMODB_TABLES",
+        "valueFrom": "${dynamodb_tables}"
+      },
+      {
+        "name": "SERVICE_ENDPOINTS",
+        "valueFrom": "${service_endpoints}"
       }
     ],
     "logConfiguration": {

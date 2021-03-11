@@ -127,6 +127,8 @@ resource "aws_ecs_task_definition" "token" {
       container_image   = "${aws_ecr_repository.token.repository_url}:latest"
       app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
       app_mesh_resource = aws_appmesh_virtual_node.token.arn
+      dynamodb_tables   = aws_ssm_parameter.tables.name
+      service_endpoints = aws_ssm_parameter.endpoints.name
     }
   )
 
@@ -208,6 +210,8 @@ resource "aws_ecs_task_definition" "tenant" {
       container_image   = "${aws_ecr_repository.tenant.repository_url}:latest"
       app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
       app_mesh_resource = aws_appmesh_virtual_node.tenant.arn
+      dynamodb_tables   = aws_ssm_parameter.tables.name
+      service_endpoints = aws_ssm_parameter.endpoints.name
     }
   )
 
@@ -290,6 +294,8 @@ resource "aws_ecs_task_definition" "user" {
       container_image   = "${aws_ecr_repository.user.repository_url}:latest"
       app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
       app_mesh_resource = aws_appmesh_virtual_node.user.arn
+      dynamodb_tables   = aws_ssm_parameter.tables.name
+      service_endpoints = aws_ssm_parameter.endpoints.name
     }
   )
 
@@ -371,6 +377,8 @@ resource "aws_ecs_task_definition" "tenant_reg" {
       container_image   = "${aws_ecr_repository.tenant_reg.repository_url}:latest"
       app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
       app_mesh_resource = aws_appmesh_virtual_node.tenant_reg.arn
+      dynamodb_tables   = aws_ssm_parameter.tables.name
+      service_endpoints = aws_ssm_parameter.endpoints.name
     }
   )
 
@@ -383,34 +391,32 @@ resource "aws_ecs_task_definition" "tenant_reg" {
 # ----------------------------------------------------------------------------------------------
 # ECS Service - Tenant Registry Service
 # ----------------------------------------------------------------------------------------------
-resource "aws_ecs_service" "tenant_reg" {
-  name                               = "tenant_reg_service"
-  cluster                            = aws_ecs_cluster.saas.id
-  desired_count                      = 1
-  launch_type                        = "FARGATE"
-  platform_version                   = "1.4.0"
-  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.token.family}:${local.task_def_rev_token}"
-  deployment_maximum_percent         = 200
-  deployment_minimum_healthy_percent = 100
+# resource "aws_ecs_service" "tenant_reg" {
+#   name                               = "tenant_reg_service"
+#   cluster                            = aws_ecs_cluster.saas.id
+#   desired_count                      = 1
+#   launch_type                        = "FARGATE"
+#   platform_version                   = "1.4.0"
+#   task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.tenant_reg.family}:${local.task_def_rev_tenant_reg}"
+#   deployment_maximum_percent         = 200
+#   deployment_minimum_healthy_percent = 100
 
-  network_configuration {
-    assign_public_ip = false
-    subnets          = module.vpc.private_subnets
-    # security_groups  = var.vpc_security_groups
-  }
-  scheduling_strategy = "REPLICA"
+#   network_configuration {
+#     assign_public_ip = false
+#     subnets          = module.vpc.private_subnets
+#     # security_groups  = var.vpc_security_groups
+#   }
+#   scheduling_strategy = "REPLICA"
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.tenant_reg.arn
-  }
+#   service_registries {
+#     registry_arn = aws_service_discovery_service.tenant_reg.arn
+#   }
 
-  provisioner "local-exec" {
-    when    = destroy
-    command = "sh ${path.module}/scripts/servicediscovery-drain.sh ${split("/", self.service_registries[0].registry_arn)[1]}"
-  }
-}
-
-
+#   provisioner "local-exec" {
+#     when    = destroy
+#     command = "sh ${path.module}/scripts/servicediscovery-drain.sh ${split("/", self.service_registries[0].registry_arn)[1]}"
+#   }
+# }
 
 # ----------------------------------------------------------------------------------------------
 # AWS ECS Service - System Registry Service Task Definition
@@ -448,6 +454,8 @@ resource "aws_ecs_task_definition" "system_reg" {
       container_image   = "${aws_ecr_repository.system_reg.repository_url}:latest"
       app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
       app_mesh_resource = aws_appmesh_virtual_node.system_reg.arn
+      dynamodb_tables   = aws_ssm_parameter.tables.name
+      service_endpoints = aws_ssm_parameter.endpoints.name
     }
   )
 
@@ -466,7 +474,7 @@ resource "aws_ecs_service" "system_reg" {
   desired_count                      = 1
   launch_type                        = "FARGATE"
   platform_version                   = "1.4.0"
-  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.token.family}:${local.task_def_rev_token}"
+  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.system_reg.family}:${local.task_def_rev_system_reg}"
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 

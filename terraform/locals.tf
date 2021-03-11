@@ -16,6 +16,22 @@ locals {
   task_def_family_tenant     = "onecloud-saas-tenant"
   task_def_family_tenant_reg = "onecloud-saas-tenant-registration"
   task_def_family_system_reg = "onecloud-saas-system-registration"
+
+  namespace = aws_service_discovery_private_dns_namespace.saas.name
+
+  endpoints = {
+    SERVICE_ENDPOINT_TENANT = "${aws_service_discovery_service.tenant.name}.${local.namespace}"
+    SERVICE_ENDPOINT_USER   = "${aws_service_discovery_service.user.name}.${local.namespace}"
+    SERVICE_ENDPOINT_TOKEN  = "${aws_service_discovery_service.token.name}.${local.namespace}"
+    SERVICE_ENDPOINT_AUTH   = "${aws_service_discovery_service.auth.name}.${local.namespace}"
+  }
+
+  tables = {
+    TABLE_NAME_USER    = aws_dynamodb_table.user.name
+    TABLE_NAME_TENANT  = aws_dynamodb_table.tenant.name
+    TABLE_NAME_PRODUCT = aws_dynamodb_table.product.name
+    TABLE_NAME_ORDER   = aws_dynamodb_table.order.name
+  }
 }
 
 # ----------------------------------------------------------------------------------------------

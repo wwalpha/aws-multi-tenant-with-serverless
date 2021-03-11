@@ -22,7 +22,7 @@
     "compose:up": "docker-compose -f 'mocks/docker-compose.yml' up -d --build",
     "compose:restart": "yarn compose:down && yarn compose:up",
     "clean": "docker image prune --force",
-    "act": "act push --platform ubuntu-18.04=wwalpha/act-ubuntu:18.04 --secret-file .secrets -W .github/workflows/tenant.yml",
+    "act": "act push --platform ubuntu-18.04=wwalpha/act-ubuntu:18.04 --secret-file .secrets -W .github/workflows/system_reg.yml",
     "kill": "lsof -i :${PORT:-8080} -t | xargs kill"
   },
   "devDependencies": {
