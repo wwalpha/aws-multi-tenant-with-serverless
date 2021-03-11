@@ -61,6 +61,14 @@ resource "aws_iam_role_policy_attachment" "ecs_task_exec_cloudwatch" {
 }
 
 # ----------------------------------------------------------------------------------------------
+# AWS ECS Task Role Policy - SSM Parameter Store Access
+# ----------------------------------------------------------------------------------------------
+resource "aws_iam_role_policy_attachment" "ecs_task_exec_ssm" {
+  role       = aws_iam_role.ecs_task_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+}
+
+# ----------------------------------------------------------------------------------------------
 # AWS Lambda Role
 # ----------------------------------------------------------------------------------------------
 resource "aws_iam_role" "lambda_auth" {

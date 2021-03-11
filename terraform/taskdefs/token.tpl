@@ -11,6 +11,12 @@
     ],
     "environment": [
       {
+        "name": "CONTAINER_PORT",
+        "value": "80"
+      }
+    ],
+    "secrets":[
+      {
         "name": "DYNAMODB_TABLES",
         "valueFrom": "${dynamodb_tables}"
       },
@@ -28,6 +34,16 @@
         "awslogs-region": "${aws_region}",
         "awslogs-stream-prefix": "ecs"
       }
+    },
+    "healthCheck": {
+      "retries": 3,
+      "command": [
+        "CMD-SHELL",
+        "curl -f http://localhost/token/health || exit 1"
+      ],
+      "timeout": 2,
+      "interval": 5,
+      "startPeriod": 10
     }
   },
   {

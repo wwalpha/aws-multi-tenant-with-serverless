@@ -88,3 +88,10 @@ output "SERVICE_ENDPOINT_TOKEN" {
 #     }
 #   }
 # }
+output "test1" {
+  value = aws_ssm_parameter.tables.arn
+}
+
+output "test2" {
+  value = aws_ssm_parameter.tables.arn
+}

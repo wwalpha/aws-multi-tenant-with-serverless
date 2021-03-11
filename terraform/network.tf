@@ -24,19 +24,42 @@ module "private_link_sg" {
   description = "saas_allow_private"
   vpc_id      = module.vpc.vpc_id
 
-  ingress_cidr_blocks = ["10.10.0.0/16"]
-  ingress_rules       = ["https-443-tcp"]
-  ingress_with_cidr_blocks = [
-    {
-      from_port   = 8080
-      to_port     = 8090
-      protocol    = "tcp"
-      description = "User-service ports"
-      cidr_blocks = "10.10.0.0/16"
-    },
-    {
-      rule        = "postgresql-tcp"
-      cidr_blocks = "0.0.0.0/0"
-    },
-  ]
+  ingress_cidr_blocks = ["10.0.0.0/16"]
+  ingress_rules       = ["http-80-tcp"]
+  egress_rules        = ["all-all"]
+}
+
+# ----------------------------------------------------------------------------------------------
+# AWS Security Group - ECS
+# ----------------------------------------------------------------------------------------------
+resource "aws_security_group" "ecs_default_sg" {
+  name        = "saas_allow_http"
+  description = "saas_allow_http"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "saas_allow_http"
+  }
 }

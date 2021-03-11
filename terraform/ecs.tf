@@ -125,10 +125,9 @@ resource "aws_ecs_task_definition" "token" {
       aws_region        = local.region
       container_name    = local.task_def_family_token
       container_image   = "${aws_ecr_repository.token.repository_url}:latest"
-      app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
-      app_mesh_resource = aws_appmesh_virtual_node.token.arn
-      dynamodb_tables   = aws_ssm_parameter.tables.name
-      service_endpoints = aws_ssm_parameter.endpoints.name
+      app_mesh_node     = split(":", aws_appmesh_virtual_node.token.arn)[5]
+      dynamodb_tables   = aws_ssm_parameter.tables.arn
+      service_endpoints = aws_ssm_parameter.endpoints.arn
     }
   )
 
@@ -154,15 +153,9 @@ resource "aws_ecs_service" "token" {
   network_configuration {
     assign_public_ip = false
     subnets          = module.vpc.private_subnets
-    # security_groups  = var.vpc_security_groups
+    security_groups  = [aws_security_group.ecs_default_sg.id]
   }
   scheduling_strategy = "REPLICA"
-
-  # load_balancer {
-  #   target_group_arn = aws_lb_target_group.backend_api.arn
-  #   container_name   = "onecloud-fargate-backend-api"
-  #   container_port   = 8080
-  # }
 
   service_registries {
     registry_arn = aws_service_discovery_service.token.arn
@@ -208,10 +201,9 @@ resource "aws_ecs_task_definition" "tenant" {
       aws_region        = local.region
       container_name    = local.task_def_family_tenant
       container_image   = "${aws_ecr_repository.tenant.repository_url}:latest"
-      app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
-      app_mesh_resource = aws_appmesh_virtual_node.tenant.arn
-      dynamodb_tables   = aws_ssm_parameter.tables.name
-      service_endpoints = aws_ssm_parameter.endpoints.name
+      app_mesh_node     = split(":", aws_appmesh_virtual_node.tenant.arn)[5]
+      dynamodb_tables   = aws_ssm_parameter.tables.arn
+      service_endpoints = aws_ssm_parameter.endpoints.arn
     }
   )
 
@@ -230,14 +222,14 @@ resource "aws_ecs_service" "tenant" {
   desired_count                      = 1
   launch_type                        = "FARGATE"
   platform_version                   = "1.4.0"
-  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.token.family}:${local.task_def_rev_token}"
+  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.tenant.family}:${local.task_def_rev_tenant}"
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
   network_configuration {
     assign_public_ip = false
     subnets          = module.vpc.private_subnets
-    # security_groups  = var.vpc_security_groups
+    security_groups  = [aws_security_group.ecs_default_sg.id]
   }
   scheduling_strategy = "REPLICA"
 
@@ -292,10 +284,9 @@ resource "aws_ecs_task_definition" "user" {
       aws_region        = local.region
       container_name    = local.task_def_family_user
       container_image   = "${aws_ecr_repository.user.repository_url}:latest"
-      app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
-      app_mesh_resource = aws_appmesh_virtual_node.user.arn
-      dynamodb_tables   = aws_ssm_parameter.tables.name
-      service_endpoints = aws_ssm_parameter.endpoints.name
+      app_mesh_node     = split(":", aws_appmesh_virtual_node.user.arn)[5]
+      dynamodb_tables   = aws_ssm_parameter.tables.arn
+      service_endpoints = aws_ssm_parameter.endpoints.arn
     }
   )
 
@@ -314,14 +305,14 @@ resource "aws_ecs_service" "user" {
   desired_count                      = 1
   launch_type                        = "FARGATE"
   platform_version                   = "1.4.0"
-  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.token.family}:${local.task_def_rev_token}"
+  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.user.family}:${local.task_def_rev_user}"
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
   network_configuration {
     assign_public_ip = false
     subnets          = module.vpc.private_subnets
-    # security_groups  = var.vpc_security_groups
+    security_groups  = [aws_security_group.ecs_default_sg.id]
   }
   scheduling_strategy = "REPLICA"
 
@@ -375,10 +366,9 @@ resource "aws_ecs_task_definition" "tenant_reg" {
       aws_region        = local.region
       container_name    = local.task_def_family_tenant_reg
       container_image   = "${aws_ecr_repository.tenant_reg.repository_url}:latest"
-      app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
-      app_mesh_resource = aws_appmesh_virtual_node.tenant_reg.arn
-      dynamodb_tables   = aws_ssm_parameter.tables.name
-      service_endpoints = aws_ssm_parameter.endpoints.name
+      app_mesh_node     = split(":", aws_appmesh_virtual_node.tenant_reg.arn)[5]
+      dynamodb_tables   = aws_ssm_parameter.tables.arn
+      service_endpoints = aws_ssm_parameter.endpoints.arn
     }
   )
 
@@ -391,32 +381,32 @@ resource "aws_ecs_task_definition" "tenant_reg" {
 # ----------------------------------------------------------------------------------------------
 # ECS Service - Tenant Registry Service
 # ----------------------------------------------------------------------------------------------
-# resource "aws_ecs_service" "tenant_reg" {
-#   name                               = "tenant_reg_service"
-#   cluster                            = aws_ecs_cluster.saas.id
-#   desired_count                      = 1
-#   launch_type                        = "FARGATE"
-#   platform_version                   = "1.4.0"
-#   task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.tenant_reg.family}:${local.task_def_rev_tenant_reg}"
-#   deployment_maximum_percent         = 200
-#   deployment_minimum_healthy_percent = 100
+resource "aws_ecs_service" "tenant_reg" {
+  name                               = "tenant_reg_service"
+  cluster                            = aws_ecs_cluster.saas.id
+  desired_count                      = 1
+  launch_type                        = "FARGATE"
+  platform_version                   = "1.4.0"
+  task_definition                    = "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${aws_ecs_task_definition.tenant_reg.family}:${local.task_def_rev_tenant_reg}"
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
 
-#   network_configuration {
-#     assign_public_ip = false
-#     subnets          = module.vpc.private_subnets
-#     # security_groups  = var.vpc_security_groups
-#   }
-#   scheduling_strategy = "REPLICA"
+  network_configuration {
+    assign_public_ip = false
+    subnets          = module.vpc.private_subnets
+    security_groups  = [aws_security_group.ecs_default_sg.id]
+  }
+  scheduling_strategy = "REPLICA"
 
-#   service_registries {
-#     registry_arn = aws_service_discovery_service.tenant_reg.arn
-#   }
+  service_registries {
+    registry_arn = aws_service_discovery_service.tenant_reg.arn
+  }
 
-#   provisioner "local-exec" {
-#     when    = destroy
-#     command = "sh ${path.module}/scripts/servicediscovery-drain.sh ${split("/", self.service_registries[0].registry_arn)[1]}"
-#   }
-# }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "sh ${path.module}/scripts/servicediscovery-drain.sh ${split("/", self.service_registries[0].registry_arn)[1]}"
+  }
+}
 
 # ----------------------------------------------------------------------------------------------
 # AWS ECS Service - System Registry Service Task Definition
@@ -452,10 +442,9 @@ resource "aws_ecs_task_definition" "system_reg" {
       aws_region        = local.region
       container_name    = local.task_def_family_system_reg
       container_image   = "${aws_ecr_repository.system_reg.repository_url}:latest"
-      app_mesh_node     = "mesh/fargate-microservice-mesh/virtualNode/api-node"
-      app_mesh_resource = aws_appmesh_virtual_node.system_reg.arn
-      dynamodb_tables   = aws_ssm_parameter.tables.name
-      service_endpoints = aws_ssm_parameter.endpoints.name
+      app_mesh_node     = split(":", aws_appmesh_virtual_node.system_reg.arn)[5]
+      dynamodb_tables   = aws_ssm_parameter.tables.arn
+      service_endpoints = aws_ssm_parameter.endpoints.arn
     }
   )
 
@@ -481,7 +470,7 @@ resource "aws_ecs_service" "system_reg" {
   network_configuration {
     assign_public_ip = false
     subnets          = module.vpc.private_subnets
-    # security_groups  = var.vpc_security_groups
+    security_groups  = [aws_security_group.ecs_default_sg.id]
   }
   scheduling_strategy = "REPLICA"
 
